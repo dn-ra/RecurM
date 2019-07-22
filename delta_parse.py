@@ -135,7 +135,7 @@ file = 'C:\\Users\\dan_r\\Documents\\Honours_Data\\nucmertest\\testsplitvserrors
     Placed together, starts, stops, and errors will form a matrix with number of alignments equal to width
     '''
 
-def deltaread(file):
+def deltaread(file): #if reading in a whole bunch of .delta files, record these in a list to preserve function of later funcitons
     '''parse delta files'''
     with open(file, 'r') as f:
         self_match_count = 0
@@ -150,9 +150,9 @@ def deltaread(file):
             if line.startswith('>'):
                 if name: #skip flushing to dictionary if this is the first match record
                     #FIRST - flush previous hit to a nucmer_match object
-                    if match.sort() not in seen_matches: #if reverse has not already been read
+                    if [match[1], match[0]] not in seen_matches: #if reverse has not already been read
                         delta.append(Nucmer_Match(match, matchdeets))  
-                        seen_matches.append(match)
+                        seen_matches.append([match[0], match[1]])
                     #remove alignment details of previous match
                     del matchdeets[:]
                 #THEN - read in match details
@@ -178,12 +178,9 @@ def deltaread(file):
 
     deltadict = {}
     deltadict[deltaname] = delta
-    #TODO - Get # of sequences in single assembly to check assertion statement
-    #This will require a step to count number of sequences in the assembly fasta file, probably using bash. Worth it?
-    #assert (self_match_count == of_sequences_in_assembly), "Nucmer fail. All contigs should match to themselves if pre-processing has occured correctly. Please ensure assembly name amendment has been done."
     return deltadict
 
-def dict_threshold(deltadict, threshold = 0.97, collate = False, outfile = None): #will need to include sig_matches if collate==True
+def dict_threshold(deltadict, threshold = 0.90, collate = False, outfile = None):
     '''input = dictionary output from deltaparse function
     apply blanket ratio threshold level and select to process further'''
     thresh_matches = []
@@ -192,47 +189,20 @@ def dict_threshold(deltadict, threshold = 0.97, collate = False, outfile = None)
             if match.apply_threshold(threshold) == True:
                 thresh_matches.append(match)
     match_dict = {}            
-    match_dict[next(iter(deltadict.keys())) +"---"+str(threshold)] = thresh_matches
+    match_dict[next(iter(deltadict.keys())) +"---"+str(threshold)] = thresh_matches #this won't work if I've read in heaps of delta files into the one dictionary
     
-    '''optionally write to file'''   
-    if outfile:
+    #optionally output only significant Nucmer_Match objects, for collation into list containing all matches from multiple deltafiles
+    if collate == True:
+        return thresh_matches
+    #optionally write to file   
+    elif outfile:
         write_thresh_matches(match_dict, outfile)
-    
-#    if collate == True:
-#        #TODO
-#        #run as subprocess?
-#        sig_matches = collate_sig_matches(match_dict) #will need to set sig_matches to [] when calling dict_threshold in the main program
-#        return sig_matches
+    #just return dictionary for interactive use
     else:
         return match_dict
-    
-#TODO - see comments
-def collate_sig_matches(match_dict, sig_matches = None): #how to pass environment variable into function? but only if it exists?
-    try:
-        current_matches = sig_matches #test if following on from a previous call
-    except NameError:
-        current_matches = []
-    
-    for match in next(iter(match_dict.values())):
-        current_matches.append(match)
-        
-    sig_matches = current_matches
-    return sig_matches #currently as a list of matches. But should I index their names in a dictionary?
 
-#TODO necessary?
-def sig_matches_to_dict(sig_matches):
-    return None
-
-#necessary? just do this during single_linkage_cluster generation
-#def extract_by_node(match_dict, node): #node with assembly information still at the front
-#    firstlist = []
-#    secondlist = []
-#    for k, v in match_dict.items():
-#        firstlist.append(v.seqs[0])
-#        secondlist.append(v.seqs[1])
-#    return None
     
-#TODO - what if dictionary holds many different delta files? Currently only for dictionaries of len = 1
+
 def write_thresh_matches(match_dict, filename):
     #TODO - write stats to file
     '''write simple txt file containing sequence matches that pass threshold'''

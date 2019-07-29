@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Main pipeline for Nucmer_matching from .delta files to cluster generation
+Main pipeline for Nucmer_Matching from .delta files to cluster generation
 
 author: Daniel Rawlinson, ACE
 email: daniel.rawlinson@uqconnect.edu.au
@@ -11,6 +11,10 @@ import delta_parse
 
 #set locaiton of delta files
 delta_dir = 'C:\Users\dan_r\Documents\Honours_Data\nucmertest\Nucmer_results'
+
+#set location of bam files
+bam_dir = ''
+
 
 #read in nucmer matches of each deltafile
 for file in os.listdir(delta_dir):
@@ -30,8 +34,10 @@ for delta_dict in alldeltas:
 #cluster all significant matches & sort
 clusters = single_linkage_cluster.cluster_nucmer_matches(collated_sig_matches)
 single_linkage_cluster.sort_clusters(clusters)
-#exit type if list of Contig_Cluster objects
+#exit type is list of Contig_Cluster objects
 
 #run analysis on clusters
 for c in clusters:
-    c.retrieve_seqs(get_bam_for_nodes = True)
+    c.retrieve_seqs(get_bam_for_nodes = True, bam_location = bam_dir) #bam_location set at beginning of script
+    
+##determine orientation of matches in the cluster

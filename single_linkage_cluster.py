@@ -98,7 +98,7 @@ class Contig_Cluster(object):
         cluster_out.close()
         
         if get_bam_for_nodes == True:
-            gen_minibam(node_assembly_dict, bam_location) #removed ref to temp_files
+            gen_minibam(node_assembly_dict, bam_location = bam_dir) #removed ref to temp_files
         
         #delete tempfiles, delete = False means user must handle their deletion
         [os.removeitems(f) for f in tmp_node_fnas.values()]
@@ -137,7 +137,32 @@ class Contig_Cluster(object):
         - Do regions align globally or differentially? #no of matches in Nucmer_Match
         - do endings overlap?
         - where do the reads go? when do I generate bam files? #look at minibam
+        -are there any regions that don't match?
         '''
+        
+        #alignments_per_match
+        #if closer to one, more likely to be global match
+        num_alignments = 0
+        for m in self.matches:
+            num_alignments += len(m)
+        alignments_per_match = num_alignments/len(self.matches)
+        
+        #overlapping regions 
+        #can only be done within each match. cannot
+        #assume that regions are directly comparable between match objects
+        #set as boolean?
+        overlap = 0
+        
+        
+        #uncovered regions 
+        #can only be done within each match
+        
+        #end coverage? hold one contig and check alignent stats of all others against it?
+        #would be expensive to do but would give confidence as to where alignments tend to happen.
+        
+        
+        
+        
         return None
 
 

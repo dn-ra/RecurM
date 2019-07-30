@@ -152,6 +152,16 @@ class Contig_Cluster(object):
         #assume that regions are directly comparable between match objects
         #set as boolean?
         overlap = 0
+        seen_nodes = []
+        
+        for n in self.nodes:
+            current = n
+            seen_nodes.append(current)
+            check_matches = [match for match in self.matches if current in match.seqs]
+            for m in check_matches:
+                ref = m.seqs.index(current) + 1
+                starts = getattr(m, 'hitstarts_{}'.format(ref))
+                stops = getattr(m, 'hitstops_{}'.format(ref))
         
         
         #uncovered regions 

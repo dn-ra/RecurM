@@ -7,7 +7,7 @@ email: daniel.rawlinson@uqconnect.edu.au
 """
 import single_linkage_cluster
 import delta_parse
-
+import os
 
 #set locaiton of delta files
 delta_dir = 'C:\\Users\\dan_r\\Documents\\Honours_Data\\nucmertest\\Nucmer_results'

@@ -10,16 +10,16 @@ import delta_parse
 
 
 #set locaiton of delta files
-delta_dir = 'C:\Users\dan_r\Documents\Honours_Data\nucmertest\Nucmer_results'
+delta_dir = 'C:\\Users\\dan_r\\Documents\\Honours_Data\\nucmertest\\Nucmer_results'
 
 #set location of bam files
 bam_dir = ''
 
-
+alldeltas = []
 #read in nucmer matches of each deltafile
 for file in os.listdir(delta_dir):
     if file.endswith('.delta'):
-        alldeltas.append(delta_parse.deltaread(file))
+        alldeltas.append(delta_parse.deltaread(delta_dir+'/'+file))
 #exit type is dictionary
 
         
@@ -38,6 +38,7 @@ single_linkage_cluster.sort_clusters(clusters)
 
 #run analysis on clusters
 for c in clusters:
-    c.retrieve_seqs(get_bam_for_nodes = True, bam_location = bam_dir) #bam_location set at beginning of script
+    c.retrieve_seqs(bam_location = bam_dir) #bam_location set at beginning of script
+    c.label_cluster()
     
 ##determine orientation of matches in the cluster

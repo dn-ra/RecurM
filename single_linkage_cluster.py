@@ -80,15 +80,15 @@ class Contig_Cluster(object):
         cluster_out = open(outdir + "/" + outfile, 'w')
         #parallelise eventually. That's why i've written it to dictionaries first
         for node, assembly in node_assembly_dict.items():
-            seq_tmp = tempfile.NamedTemporaryFile(delete=False) #not necessary. Don't need to pass file to samtools view
-            tmp_node_fnas[node] = seq_tmp.name #not necessary. Don't need to pass file to samtools view.
+            #seq_tmp = tempfile.NamedTemporaryFile(delete=False) #not necessary. Don't need to pass file to samtools view
+            #tmp_node_fnas[node] = seq_tmp.name #not necessary. Don't need to pass file to samtools view.
             print(assembly)
             sourcefile = assembly[0]
             print(sourcefile)
             f = open("/".join([assembly_dir, sourcefile]))
             for i in f:
                 if i.find(node)!=-1:
-                    seq_tmp.write(i.encode())
+                    #seq_tmp.write(i.encode())
                     cluster_out.write(i)
                     wholeseq =False #flag to tell me if I've taken the whole sequence yet
                     while wholeseq ==False:
@@ -96,16 +96,16 @@ class Contig_Cluster(object):
                         if line.startswith('>'):
                             wholeseq = True
                         else:
-                            seq_tmp.write(line.encode()) #not necessary
+                            #seq_tmp.write(line.encode()) #not necessary
                             cluster_out.write(line)
-            seq_tmp.close() # not necessary
+            #seq_tmp.close() # not necessary
         cluster_out.close()
         
         if return_node_assembly_dict == True:
             return node_assembly_dict #return this to pass into gen_minibam. Not particularly neat
         
         #delete tempfiles, delete = False means user must handle their deletion
-        [os.removeitems(f) for f in tmp_node_fnas.values()]
+        #[os.removeitems(f) for f in tmp_node_fnas.values()] # note necessary
         
 #        previously proposed method
         #awk (retrieve sequence) $contigID $assembly_file

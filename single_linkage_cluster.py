@@ -68,6 +68,8 @@ class Contig_Cluster(object):
         #can get assembly_dir from delta output?
         if outdir == None:
             outdir = 'CLUSTER_size_{}_avlen_{}_avcov_{}'.format(self.size, self.av_length, self.av_cov)
+            
+        print(outdir)
         os.mkdir(outdir)
         node_assembly_dict = {}
         tmp_node_fnas = {}

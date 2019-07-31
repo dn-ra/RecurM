@@ -77,7 +77,7 @@ class Contig_Cluster(object):
             nodesplit = n.split("__")
             node_assembly_dict[">"+nodesplit[1]] = nodesplit[0] #remainder (1st entry) into assembly list
             
-        cluster_out = open("/".join(outdir, outfile), 'w')
+        cluster_out = open(outdir + "/" + outfile, 'w')
         #parallelise eventually. That's why i've written it to dictionaries first
         for node, assembly in node_assembly_dict.items():
             seq_tmp = tempfile.NamedTemporaryFile(delete=False) #not necessary. Don't need to pass file to samtools view

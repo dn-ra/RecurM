@@ -45,7 +45,7 @@ for c in clusters:
     assembly_node_dict = c.retrieve_seqs(assembly_dir = assembly_dir, return_node_assembly_dict = True) #bam_location set at beginning of script
     
 f = open('pickled_clusters', 'wb')
-pickle.dump(clusters, 'pickled_clusters')
+pickle.dump(clusters, f)
 f.close()
 
 

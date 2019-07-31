@@ -98,7 +98,7 @@ class Contig_Cluster(object):
         cluster_out.close()
         
         if get_bam_for_nodes == True:
-            gen_minibam(node_assembly_dict, bam_location = bam_dir) #removed ref to temp_files
+            return node_assembly_dict
         
         #delete tempfiles, delete = False means user must handle their deletion
         [os.removeitems(f) for f in tmp_node_fnas.values()]
@@ -111,7 +111,7 @@ class Contig_Cluster(object):
             
 #what if I look for orientation of reads mapped from other assemblies? Shouldn't that be consistent too?
 #have to call from within retreieve_seqs for tempfiles to be accessible
-    def gen_minibam(node_assembly_dict, bam_location, outdir): #pass self into this?
+    def gen_minibam(node_assembly_dict, bam_location, outdir = 'minibam_out'): #pass self into this?
         sam_cmd = 'samtools view {1} {2} > %s/{1}_mini.bam' % (outdir) #edit this for correct command
         
         node_bam_dict = {}
@@ -163,13 +163,11 @@ class Contig_Cluster(object):
                 starts = getattr(m, 'hitstarts_{}'.format(ref))
                 stops = getattr(m, 'hitstops_{}'.format(ref))
         
-        
         #uncovered regions 
         #can only be done within each match
         
         #end coverage? hold one contig and check alignent stats of all others against it?
         #would be expensive to do but would give confidence as to where alignments tend to happen.
-        
         
         
         

@@ -12,7 +12,7 @@ from logging import warning #also import exceptions?
 
 
 #pattern to determine if contig name is in spades format
-spadespattern = re.compile(r'NODE_[0-9]*_', re.UNICODE)
+spadespattern = re.compile(r'.*NODE_[0-9]*_', re.UNICODE)
 
 #set delimiter here?
 #delim = '__'
@@ -61,21 +61,21 @@ class Contig_Cluster(object):
         return None
     
     #TODO - mkdir for each cluster
-    def retrieve_seqs(self, assembly_dir = None, outfile = 'cluster_out.fa', get_bam_for_nodes = False):
+    def retrieve_seqs(self, assembly_dir, outdir = None, outfile = 'cluster_out.fa', outdir = os.getcwd(), return_node_assembly_dict =False):
         #all I need are nodes and location of source fasta files? use sequence library in repeatM
         #pop out assembly number from start of contig? use as input the source fastafiles?
         #Beware leaked processes
-        if assembly_dir:
-            outdir = os.mkdir(assembly_dir)
-        else:   
-            outdir = os.mkdir('CLUSTER_size_{}_avlen_{}_avcov_{}'.format(self.size, self.av_length, self.av_cov))
+        #can get assembly_dir from delta output?
+        if outdir == None:
+            outdir = 'CLUSTER_size_{}_avlen_{}_avcov_{}'.format(self.size, self.av_length, self.av_cov)
+        os.mkdir(outdir)
         node_assembly_dict = {}
         tmp_node_fnas = {}
         for n in self.nodes:
             nodesplit = n.split("__")
             node_assembly_dict[">"+nodesplit.pop()] = nodesplit #remainder (1st entry) into assembly list
             
-        cluster_out = open(outdir + "/" + outfile, 'w')
+        cluster_out = open("/".join(outdir, outfile), 'w')
         #parallelise eventually. That's why i've written it to dictionaries first
         for node, assembly in node_assembly_dict.items():
             seq_tmp = tempfile.NamedTemporaryFile(delete=False) #not necessary. Don't need to pass file to samtools view
@@ -97,8 +97,8 @@ class Contig_Cluster(object):
             seq_tmp.close() # not necessary
         cluster_out.close()
         
-        if get_bam_for_nodes == True:
-            return node_assembly_dict
+        if return_node_assembly_dict == True:
+            return node_assembly_dict #return this to pass into gen_minibam. Not particularly neat
         
         #delete tempfiles, delete = False means user must handle their deletion
         [os.removeitems(f) for f in tmp_node_fnas.values()]

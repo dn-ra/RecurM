@@ -38,7 +38,7 @@ single_linkage_cluster.sort_clusters(clusters)
 
 #run analysis on clusters
 for c in clusters:
-    assembly_node_dict = c.retrieve_seqs(get_bam_for_nodes = True) #bam_location set at beginning of script
+    assembly_node_dict = c.retrieve_seqs(assembly_dir = ??, return_node_assembly_dict = True) #bam_location set at beginning of script
     c.gen_minibam(assembly_node_dict, bam_location = bam_dir)
     c.label_cluster()
     

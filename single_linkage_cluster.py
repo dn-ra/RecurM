@@ -82,10 +82,7 @@ class Contig_Cluster(object):
         for node, assembly in node_assembly_dict.items():
             #seq_tmp = tempfile.NamedTemporaryFile(delete=False) #not necessary. Don't need to pass file to samtools view
             #tmp_node_fnas[node] = seq_tmp.name #not necessary. Don't need to pass file to samtools view.
-            print(assembly)
-            sourcefile = assembly[0]
-            print(sourcefile)
-            f = open("/".join([assembly_dir, sourcefile]))
+            f = open("/".join([assembly_dir, assembly]))
             for i in f:
                 if i.find(node)!=-1:
                     #seq_tmp.write(i.encode())

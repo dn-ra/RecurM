@@ -61,7 +61,7 @@ class Contig_Cluster(object):
         return None
     
     #TODO - mkdir for each cluster
-    def retrieve_seqs(self, assembly_dir, outdir = None, outfile = 'cluster_out.fa', outdir = os.getcwd(), return_node_assembly_dict =False):
+    def retrieve_seqs(self, assembly_dir, outdir = None, outfile = 'cluster_out.fa', return_node_assembly_dict =False):
         #all I need are nodes and location of source fasta files? use sequence library in repeatM
         #pop out assembly number from start of contig? use as input the source fastafiles?
         #Beware leaked processes
@@ -75,7 +75,7 @@ class Contig_Cluster(object):
         tmp_node_fnas = {}
         for n in self.nodes:
             nodesplit = n.split("__")
-            node_assembly_dict[">"+nodesplit.pop()] = nodesplit #remainder (1st entry) into assembly list
+            node_assembly_dict[">"+nodesplit[1]] = nodesplit[0] #remainder (1st entry) into assembly list
             
         cluster_out = open("/".join(outdir, outfile), 'w')
         #parallelise eventually. That's why i've written it to dictionaries first

@@ -8,9 +8,13 @@ email: daniel.rawlinson@uqconnect.edu.au
 import single_linkage_cluster
 import delta_parse
 import os
+import pickle
 
 #set locaiton of delta files
-delta_dir = 'C:\\Users\\dan_r\\Documents\\Honours_Data\\nucmertest\\Nucmer_results'
+delta_dir = '/srv/home/s4204666/abisko/dan/repeatm_tests/all_assemblies/filtered_2000bp/nucmer_feed_out'
+
+#set location of assemblies
+assembly_dir = '/srv/home/s4204666/abisko/dan/repeatm_tests/all_assemblies/filtered_2000bp'
 
 #set location of bam files
 bam_dir = ''
@@ -18,8 +22,8 @@ bam_dir = ''
 alldeltas = []
 #read in nucmer matches of each deltafile
 for file in os.listdir(delta_dir):
-    if file.endswith('.delta'):
-        alldeltas.append(delta_parse.deltaread(delta_dir+'/'+file))
+    #if file.endswith('.delta'):
+    alldeltas.append(delta_parse.deltaread(delta_dir+'/'+file))
 #exit type is dictionary
 
         
@@ -38,8 +42,12 @@ single_linkage_cluster.sort_clusters(clusters)
 
 #run analysis on clusters
 for c in clusters:
-    assembly_node_dict = c.retrieve_seqs(assembly_dir = ??, return_node_assembly_dict = True) #bam_location set at beginning of script
-    c.gen_minibam(assembly_node_dict, bam_location = bam_dir)
-    c.label_cluster()
+    assembly_node_dict = c.retrieve_seqs(assembly_dir = assembly_dir, return_node_assembly_dict = True) #bam_location set at beginning of script
+    
+f = open('pickled_clusters', 'wb')
+pickle.dump(clusters, 'pickled_clusters')
+f.close()
+
+
     
 ##determine orientation of matches in the cluster

@@ -25,6 +25,8 @@ import os
 
 
 '''------------------------begin class definition---------------------------'''
+
+#TODO - match.draw() to actually illustrate the alignment?
 class Nucmer_Match(object):
     '''a format in which to store each separate nucmer sequence alignment'''
     seqs = None

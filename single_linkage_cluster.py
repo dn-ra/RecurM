@@ -173,6 +173,9 @@ class Contig_Cluster(object):
         
         
         return None
+    
+
+#TODO - function to extract clusters or contigs that map to complete bins?
 
 
 

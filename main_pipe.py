@@ -42,7 +42,8 @@ single_linkage_cluster.sort_clusters(clusters)
 
 #run analysis on clusters
 for c in clusters:
-    assembly_node_dict = c.retrieve_seqs(assembly_dir = assembly_dir, return_node_assembly_dict = True) #bam_location set at beginning of script
+    assembly_node_dict = c.split_names()
+    c.retrieve_seqs(assembly_node_dict, assembly_dir = assembly_dir) #locations set at beginning of script
     
 f = open('pickled_clusters', 'wb')
 pickle.dump(clusters, f)

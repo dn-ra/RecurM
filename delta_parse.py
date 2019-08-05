@@ -152,9 +152,9 @@ def deltaread(file): #if reading in a whole bunch of .delta files, record these 
             if line.startswith('>'):
                 if name: #skip flushing to dictionary if this is the first match record
                     #FIRST - flush previous hit to a nucmer_match object
-                    if [match[1], match[0]] not in seen_matches: #if reverse has not already been read
-                        delta.append(Nucmer_Match(match, matchdeets))  
-                        seen_matches.append([match[0], match[1]])
+                    '''if [match[1], match[0]] not in seen_matches: #if reverse has not already been read <<< ignore this step. takes too long'''
+                    delta.append(Nucmer_Match(match, matchdeets))  
+                    seen_matches.append([match[0], match[1]])
                     #remove alignment details of previous match
                     del matchdeets[:]
                 #THEN - read in match details

@@ -56,36 +56,48 @@ class Contig_Cluster(object):
                 break
         return spades
     
+    def minimal_match(self):
+        '''determine lowest passing statistics from matches in cluster'''
+        low = [1,1,1,1]
+        for m in self.matches:
+            stats = m.gen_statistics()
+            for i in range(len(stats)):
+                if stats[i] < low[i]:
+                    low[i] = stats[i]
+            
+        return low
+            
+            
+            
     #TODO - for running plasflow or cbar?
     def plas_label(self):
         return None
     
-    #TODO - mkdir for each cluster
-    def retrieve_seqs(self, assembly_dir, outdir = None, outfile = 'cluster_out.fa', return_node_assembly_dict =False):
+    def split_names(self):
+        '''splits the names of the nodes to redraw node-assembly links in dictionary format'''
+        node_assembly_dict = {}
+        for n in self.nodes:
+            nodesplit = n.split("__")
+            node_assembly_dict[">"+nodesplit[1]] = nodesplit[0] #remainder (1st entry) into assembly list
+    
+        return node_assembly_dict
+    
+
+    def retrieve_seqs(self, node_assembly_dict, assembly_dir, outdir = None, outfile = 'cluster_out.fa'):
         #all I need are nodes and location of source fasta files? use sequence library in repeatM
         #pop out assembly number from start of contig? use as input the source fastafiles?
         #Beware leaked processes
         #can get assembly_dir from delta output?
         if outdir == None:
             outdir = 'CLUSTER_size_{}_avlen_{}_avcov_{}'.format(self.size, self.av_length, self.av_cov)
-            
-        print(outdir)
         os.mkdir(outdir)
-        node_assembly_dict = {}
-        tmp_node_fnas = {}
-        for n in self.nodes:
-            nodesplit = n.split("__")
-            node_assembly_dict[">"+nodesplit[1]] = nodesplit[0] #remainder (1st entry) into assembly list
             
         cluster_out = open(outdir + "/" + outfile, 'w')
         #parallelise eventually. That's why i've written it to dictionaries first
         for node, assembly in node_assembly_dict.items():
-            #seq_tmp = tempfile.NamedTemporaryFile(delete=False) #not necessary. Don't need to pass file to samtools view
-            #tmp_node_fnas[node] = seq_tmp.name #not necessary. Don't need to pass file to samtools view.
             f = open("/".join([assembly_dir, assembly]))
             for i in f:
                 if i.find(node)!=-1:
-                    #seq_tmp.write(i.encode())
                     cluster_out.write(i)
                     wholeseq =False #flag to tell me if I've taken the whole sequence yet
                     while wholeseq ==False:
@@ -93,16 +105,11 @@ class Contig_Cluster(object):
                         if line.startswith('>'):
                             wholeseq = True
                         else:
-                            #seq_tmp.write(line.encode()) #not necessary
                             cluster_out.write(line)
-            #seq_tmp.close() # not necessary
         cluster_out.close()
         
-        if return_node_assembly_dict == True:
-            return node_assembly_dict #return this to pass into gen_minibam. Not particularly neat
-        
-        #delete tempfiles, delete = False means user must handle their deletion
-        #[os.removeitems(f) for f in tmp_node_fnas.values()] # note necessary
+        return None
+
         
 #        previously proposed method
         #awk (retrieve sequence) $contigID $assembly_file
@@ -131,6 +138,7 @@ class Contig_Cluster(object):
         #TODO - load samtools and parallel into environment
         subprocess.call(['bash', '-c', 'parallel -a <(printf {}) -a <(printf {}) --link {}'.format(bam_string, node_string, sam_cmd)])
         
+        return None
     #TODO -
     def label_cluster(self):
         '''label cluster as linear or circular based on alignment evidence
@@ -163,7 +171,7 @@ class Contig_Cluster(object):
                 ref = m.seqs.index(current) + 1
                 starts = getattr(m, 'hitstarts_{}'.format(ref))
                 stops = getattr(m, 'hitstops_{}'.format(ref))
-        
+        #TODO - continue this function
         #uncovered regions 
         #can only be done within each match
         

@@ -35,6 +35,11 @@ for delta_dict in alldeltas:
     collated_sig_matches += delta_parse.dict_threshold(delta_dict, threshold = 0.90, collate = True)
 #exit type is list of Nucmer_Match objects
 
+#save progress
+f = open('pickled_sigmatches', 'wb')
+pickle.dump(collated_sig_matches, f)
+f.close()
+
 #cluster all significant matches & sort
 clusters = single_linkage_cluster.cluster_nucmer_matches(collated_sig_matches)
 single_linkage_cluster.sort_clusters(clusters)

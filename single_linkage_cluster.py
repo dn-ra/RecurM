@@ -141,36 +141,60 @@ class Contig_Cluster(object):
         return None
     #TODO -
     def label_cluster(self):
-        '''label cluster as linear or circular based on alignment evidence
+    ''' label cluster as linear or circular based on alignment evidence
         Evidence includes: 
         - Do regions align globally or differentially? #no of matches in Nucmer_Match
         - do endings overlap?
-        - where do the reads go? when do I generate bam files? #look at minibam
         -are there any regions that don't match?
-        '''
         
+        -classes of alignment. Applies to each match object
+            + linear
+                +perfect = complete alignment
+                +imperfect = part of contigs align
+                +complex = repeats or deletions
+                    
+            +circular
+                +perfect
+                +imperfect
+                +complex
+
+Possibilites:
+                            linear                |               circular
+           |------------+-------------+-----------+-----------+-----------+-------
+           | perfect    | imperfect   |  complex  | perfect   |imperfect  | complex
+len(match) |                                      |
+     1     |    *             *                   |
+     2     |                  *              *    |      *           *
+     3+    |                                 *    |                             *
+        
+     
+     '''
+      '''  
         #alignments_per_match
         #if closer to one, more likely to be global match
         num_alignments = 0
         for m in self.matches:
             num_alignments += len(m)
         alignments_per_match = num_alignments/len(self.matches)
+        '''
         
-        #overlapping regions 
-        #can only be done within each match. cannot
-        #assume that regions are directly comparable between match objects
-        #set as boolean?
-        overlap = 0
-        seen_nodes = []
+        #selects a representative contig (the one with most matches) to test match alignment orientations
+        labels = []
         
+        
+        top_len = 0
+        match_nodes = [match.seqs for match in self.matches]
         for n in self.nodes:
-            current = n
-            seen_nodes.append(current)
-            check_matches = [match for match in self.matches if current in match.seqs]
-            for m in check_matches:
-                ref = m.seqs.index(current) + 1
-                starts = getattr(m, 'hitstarts_{}'.format(ref))
-                stops = getattr(m, 'hitstops_{}'.format(ref))
+            match_num = len([m for m in match_nodes if n in m])
+            if match_len > top_len:
+                top_len = match_len
+                top_n = n
+        
+        query_matches = [m for m in self.matches if top_n in match.seqs]
+        
+        for m in query_matches:
+            labels.append(m.label())
+        
         #TODO - continue this function
         #uncovered regions 
         #can only be done within each match
@@ -180,7 +204,7 @@ class Contig_Cluster(object):
         
         
         
-        return None
+        return labels
     
 
 #TODO - function to extract clusters or contigs that map to complete bins?

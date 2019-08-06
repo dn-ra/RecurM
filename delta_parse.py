@@ -118,6 +118,60 @@ class Nucmer_Match(object):
             passthresh = True
             
         return passthresh
+    
+    
+    def label(self):
+        '''
+        options = 
+            -linear perfect
+            -linear imperfect
+            -linear complex
+            -circular perfect
+            -circular imperfect
+            -circular complex
+            '''
+        
+        '''labels to be applied'''
+        orientation = None
+        complexity = None
+        
+        for align in range(len(self)): #for each aligned region
+            seq_a = [self.hitstarts_1[align], self.hitstops_1[align]]
+            seq_b = [self.hitstarts_2[align], self.hitstops_2[align]]
+            
+            if align == 0:
+                b_direction = 'forward' if seq_b[0] < seq_b[1] else 'reverse'
+                initial_coords = [seq_a, seq_b]
+                if len(self) == 1:
+                    orientation = 'linear'
+                    if [min(seq_a), max(seq_a)] == [1, self.lengths[0]] and [min(seq_b), max(seq_b)] == [1, self.lengths[1]]:
+                        complexity = 'perfect'
+                    else:
+                        complexity = 'imperfect'
+                        
+            elif align == 1:
+                if min(seq_a) > max(initial_coords[0]): #if second alignment is outside the range of the first
+                    orientation = 'linear'
+                    if b_direction == 'forward':
+                        if seq_b[0] < seq_b[1]: #if also forward (usually is)
+                            if seq_b[0] > initial_coords[1][1]: #if min greater than previous max
+                                complexity =  'imperfect'
+                            elif #completely in initial_match
+                                complexity = 'complex' #because of a repeat region
+                            elif #straddles the boundary
+                        else:
+                            complexity = 'complex' #if one alignment forward and another reverse, implication is for a copmlex rearrangement/repeat. Don't do this. set flag here to investigate further
+                    elif b_direction == 'reverse':
+                        if seq_b[1] < seq_b[0]: #if also reverse (usually is)
+                            if seq_b[1] > initial_coords[1][0]: # if min greater than previous max
+                                complexity = 'imperfect'
+                        else:
+                            complexity = 'complex'
+                        
+                    
+            return [orientation, complexity]
+            
+            
 #TODO - promote to sig_match class
 #    def promote(self, threshold):
 #        return Sig_Match(self, threshold)

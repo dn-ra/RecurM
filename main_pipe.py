@@ -19,22 +19,23 @@ assembly_dir = '/srv/home/s4204666/abisko/dan/repeatm_tests/all_assemblies/filte
 #set location of bam files
 bam_dir = ''
 
-alldeltas = []
+
+
+#set empty vector of all nucmer_matches that pass threshold (=0.90 by default)
+collated_sig_matches = []
+
+
 #read in nucmer matches of each deltafile
 for file in os.listdir(delta_dir):
     #if file.endswith('.delta'):
     print('parsing {}'.format(file))
-    alldeltas.append(delta_parse.deltaread(delta_dir+'/'+file))
-#exit type is dictionary
-
-        
-#set empty vector of all nucmer_matches that pass threshold (=0.90 by default)  
-collated_sig_matches = []
-
-#threshold all matches and collate
-for delta_dict in alldeltas:
-    collated_sig_matches += delta_parse.dict_threshold(delta_dict, threshold = 0.90, collate = True)
-#exit type is list of Nucmer_Match objects
+    delta = delta_parse.deltaread(delta_dir+'/'+file)
+    #exit type is dictionary
+    
+    #threshold all matches and collate
+    print('thresholding {}'.format(file))
+    collated_sig_matches += delta_parse.dict_threshold(delta, threshold = 0.90, collate = True)
+    #exit type is list of Nucmer_Match objects
 
 #save progress
 f = open('pickled_sigmatches', 'wb')

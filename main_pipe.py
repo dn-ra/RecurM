@@ -23,6 +23,7 @@ alldeltas = []
 #read in nucmer matches of each deltafile
 for file in os.listdir(delta_dir):
     #if file.endswith('.delta'):
+    print('parsing {}'.format(file))
     alldeltas.append(delta_parse.deltaread(delta_dir+'/'+file))
 #exit type is dictionary
 

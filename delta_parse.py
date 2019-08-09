@@ -139,37 +139,82 @@ class Nucmer_Match(object):
             seq_a = [self.hitstarts_1[align], self.hitstops_1[align]]
             seq_b = [self.hitstarts_2[align], self.hitstops_2[align]]
             
+            b_direction = 'forward' if seq_b[0] < seq_b[1] else 'reverse'
+            initial_coords = [seq_a, seq_b]
+            
             if align == 0:
-                b_direction = 'forward' if seq_b[0] < seq_b[1] else 'reverse'
-                initial_coords = [seq_a, seq_b]
-                if len(self) == 1:
-                    orientation = 'linear'
-                    if [min(seq_a), max(seq_a)] == [1, self.lengths[0]] and [min(seq_b), max(seq_b)] == [1, self.lengths[1]]:
-                        complexity = 'perfect'
-                    else:
-                        complexity = 'imperfect'
+                orientation = 'linear1'
+                if [min(seq_a), max(seq_a)] == [1, self.lengths[0]] and [min(seq_b), max(seq_b)] == [1, self.lengths[1]]:
+                    complexity = 'perfect'
+                else:
+                    complexity = 'imperfect'
                         
-            elif align == 1:
+            elif align ==1:
                 if min(seq_a) > max(initial_coords[0]): #if second alignment is outside the range of the first
-                    orientation = 'linear'
+                    orientation = 'linear2'
                     if b_direction == 'forward':
                         if seq_b[0] < seq_b[1]: #if also forward (usually is)
                             if seq_b[0] > initial_coords[1][1]: #if min greater than previous max
                                 complexity =  'imperfect'
-                            elif #completely in initial_match
+                            elif seq_b[1] < initial_coords[1][0]: #if max less than previous min
+                                orientation = 'unknown'
+                                complexity = 'unknown'
+                                #because the second alignments are on opposite sides with no overlap. circular? 
+                            elif seq_b[0] > initial_coords[1][0] and seq_b[1] < initial_coords[1][1]: #if second alignment is completely within the first
                                 complexity = 'complex' #because of a repeat region
-                            elif #straddles the boundary
+                            elif seq_b[0] > initial_coords[1][0] and seq_b[0] < initial_coords[1][0]:#straddles the boundary
+                                if seq_b[1] > initial_coords[1][1]:
+                                    complexity = 'complex'
                         else:
-                            complexity = 'complex' #if one alignment forward and another reverse, implication is for a copmlex rearrangement/repeat. Don't do this. set flag here to investigate further
+                            complexity = 'unknown' #if one alignment forward and another reverse, implication is for a copmlex rearrangement/repeat. set flag here to investigate further
                     elif b_direction == 'reverse':
                         if seq_b[1] < seq_b[0]: #if also reverse (usually is)
                             if seq_b[1] > initial_coords[1][0]: # if min greater than previous max
                                 complexity = 'imperfect'
+                            else:
+                                complexity = 'complex'
                         else:
-                            complexity = 'complex'
-                        
+                            complexity = 'unknown'
+                elif min(seq_a) > initial_coords[0][0] and max(seq_a) < initial_coords[0][1]: #if second alignment is completely within the first
+                    complexity = 'complex'
+                elif seq_a[0] > initial_coords[0][0] and seq_a[0] < initial_coords[0][1]: ##second alignment straddles boundaries
+                    if seq_a[1] > initial_coords[0][1]: # if seq_a straddles boundaries of alignment 1
+                        if b_direction == 'forward':
+                            if seq_b[0] < seq_b[1]: #also forward
+                                if seq_b[0] > initial_coords[1][0] and seq_b[0] < initial_coords[1][1]:
+                                    if seq_b[1] > initial_coords[1][1]: # if seq_b straddles boundaries of alignment 1
+                                        orientation = 'circular1'
+                                        if [seq_b[0], seq_b[1]] == [1, self.lengths[1]] and [seq_a[0], seq_a[1]] == [1, self.lengths[0]]:
+                                             complexity = 'perfect'
+                                        else:
+                                            complexity = 'imperfect'
+                                    else:
+                                        orientation = 'not caught1'
+                                        complexity = 'not caught1'
+                                else:
+                                    orientation = 'not caught2'
+                                    complexity = 'not caught2'
+                            orientation = 'not caught3'
+                            complexity = 'not caught3'
+                        elif b_direction == 'reverse':
+                            if seq_b[0] > seq_b[1]: #also reverse
+                                if seq_b[1] < initial_coords[1][0] and seq_b[1] < initial_coords[1][0]:
+                                    if seq_b[0] > initial_coords[1][0]: 
+                                        if [initial_coords[1][0], seq_b[1]] == [self.lengths[1], 1] and [initial_coords[0][0], seq_a[1]] == [1, self.lengths[0]]:
+                                            complexity = 'perfect'
+                                        else:
+                                            complexity = 'imperfect'
+                
+                #last pass in case conditions aren't caught
+                else:
+                    orientation = 'not caught4'
+                    complexity = 'not caught4'
+            
+            elif align > 1:
+                #always set as complex when there are more than 2 aligned regions?
+                complexity = '3 regions'
                     
-            return [orientation, complexity]
+        return [orientation, complexity, align]
             
             
 #TODO - promote to sig_match class

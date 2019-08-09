@@ -141,7 +141,7 @@ class Contig_Cluster(object):
         return None
     #TODO -
     def label_cluster(self):
-    ''' label cluster as linear or circular based on alignment evidence
+        ''' label cluster as linear or circular based on alignment evidence
         Evidence includes: 
         - Do regions align globally or differentially? #no of matches in Nucmer_Match
         - do endings overlap?
@@ -168,8 +168,8 @@ len(match) |                                      |
      3+    |                                 *    |                             *
         
      
-     '''
-      '''  
+         '''
+        '''  
         #alignments_per_match
         #if closer to one, more likely to be global match
         num_alignments = 0
@@ -186,11 +186,11 @@ len(match) |                                      |
         match_nodes = [match.seqs for match in self.matches]
         for n in self.nodes:
             match_num = len([m for m in match_nodes if n in m])
-            if match_len > top_len:
-                top_len = match_len
+            if match_num > top_len:
+                top_len = match_num
                 top_n = n
         
-        query_matches = [m for m in self.matches if top_n in match.seqs]
+        query_matches = [m for m in self.matches if top_n in m.seqs]
         
         for m in query_matches:
             labels.append(m.label())
@@ -228,29 +228,37 @@ def sort_clusters(cluster_list): #or maybe a dictionary instead?
     #main sort function
     cluster_list.sort(reverse=True, key= lambda c: (sortbysize(c), sortbylength(c), sortbycov(c)))
 
-def cluster_nucmer_matches(sig_matches): #sig_matches is a list of Nucmer_Match objects
+def build_sig_match_dict(sig_matches):
     sig_match_dict = {}
-    match_links = []
-    cluster_objs = []
-    
     for m in sig_matches:
+        
         link = m.seqs
         try:
-            sig_match_dict[link[0]].append(m) 
-            sig_match_dict[link[1]].append(m)
-            
+            sig_match_dict[link[0]].append(m)
         except KeyError:
-            sig_match_dict[link[0]] = [m] 
+            sig_match_dict[link[0]] = [m]
+        try:
+            sig_match_dict[link[1]].append(m)
+        except KeyError:
             sig_match_dict[link[1]] = [m]
             
-        match_links.append(link)
+    return sig_match_dict
+    
+def cluster_nucmer_matches(sig_matches): #sig_matches is a list of Nucmer_Match objects
+    sig_match_dict = build_sig_match_dict(sig_matches)
+    match_links = [m.seqs for m in sig_matches]
+    cluster_objs = []
+
+
+    #TODO - maybe change this so that it only creates a sig_match dict for the most represented node in the cluster? Would save a lot of time in the sig_match_dict generation step.
+    #which may be why the script is taking so long (>1 day currently)    
+    sig_match_dict = build_sig_match_dict(sig_matches)
     
     cluster_list = single_linkage_cluster(match_links) #main clustering step
     
     for cluster in cluster_list:
-        nucmer_match_in_cluster = []
         for node in cluster:
-            nucmer_match_in_cluster += set(sig_match_dict[node])
+            nucmer_match_in_cluster = set(sig_match_dict[node])
         cluster_objs.append(Contig_Cluster(cluster, nucmer_match_in_cluster))
 
     return cluster_objs

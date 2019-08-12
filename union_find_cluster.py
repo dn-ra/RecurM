@@ -17,13 +17,15 @@ TODO:
 """
 
 def find_parent(node, node_parent_array):
+    #print('finding parent of', node)
     try:
         parent = node_parent_array[node]
-        if parent == -1:
+        if isinstance(parent,int):
             return node
         else:
             return find_parent(parent, node_parent_array)
     except KeyError:
+        #print('adding', node)
         node_parent_array[node] = -1
         return node
 
@@ -42,7 +44,9 @@ def cluster_conversion(node_parent_array):
     i = 0 #initial cluster counter
     for key, value in node_parent_array.items():
         if not isinstance(value, int): #if value is re-direct to another node
-            c_num = node_parent_array[find_parent(value)] #find cluster number further up the graph
+            #print('calling find_parent for', value)
+            c_num = node_parent_array[find_parent(value, node_parent_array)] #find cluster number further up the graph
+            #print('found', c_num, 'from', value, 'at cluster conversion')
             if c_num == -1:
                 c_num = i
                 i+=1
@@ -53,14 +57,20 @@ def cluster_conversion(node_parent_array):
         else: #last option should be if the value is an already-decided cluster number. Can't trace back from this! so return to dict iterator
             continue
 
-def extract_clusters(node_parent_array):
+def extract_clusters(node_parent_array): #use max_c as the known number of clusters?
     '''pull out node names for each cluster id. Return list of id lists'''
-            
+    reverse = {} #dictionary of reversed name: cluster dict
+    for name, number in node_parent_array.items():
+        if number not in reverse:
+            reverse[number] = [] #add that cluster number into dict if not there yet
+        reverse[number].append(name) #add id into that cluster dict
+    return list(reverse.values()) #output as list of lists I GET IT!
             
 def cluster_chain(node, c_num, node_parent_array):
     '''follow path through and change values to cluster number'''
     while not isinstance(node, int): #when I know the algorithm is working, change this to: while node != c_num
         new_n = node_parent_array[node]
+        #print('changing', node, 'to', c_num)
         node_parent_array[node] = c_num
         node = new_n
     

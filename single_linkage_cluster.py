@@ -28,7 +28,6 @@ class Contig_Cluster(object):
         self.av_cov = None
         self.av_length = None
         self.matches = set(matches)
-        self.repseq = self.get_rep_seq()
          #has_spades necessary?       
         if self.has_spades() == True:
             length_total = 0
@@ -95,32 +94,8 @@ class Contig_Cluster(object):
     
         return node_assembly_dict
     
-    
-    def retrieve_repseq(self, assembly_dir):
-        outdir = 'CLUSTER_size_{}_avlen_{}_avcov_{}'.format(self.size, int(self.av_length), int(self.av_cov))
-        if not os.path.isdir(outdir):
-            os.mkdir(outdir)
-        outfile = 'repseq_out.fa'
-        
-        node, assembly = self.repseq.split("__")
-        
-        seq_out = open(outdir + "/" + outfile, 'w')
-        
-        f = open("/".join([assembly_dir, assembly]))
-        for i in f:
-            if i.find(">"+node)!=-1:
-                seq_out.write(i)
-                wholeseq =False #flag to tell me if I've taken the whole sequence yet
-                while wholeseq ==False:
-                    line = next(f)
-                    if line.startswith('>'):
-                        wholeseq = True
-                    else:
-                        seq_out.write(line)
-        seq_out.close()
-        
 
-    def retrieve_seqs(self, node_assembly_dict, assembly_dir):
+    def retrieve_seqs(self, assembly_dir, repseq = False):
         #all I need are nodes and location of source fasta files?
         #pop out assembly number from start of contig? use as input the source fastafiles?
         #Beware leaked processes
@@ -130,12 +105,19 @@ class Contig_Cluster(object):
         if not os.path.isdir(outdir):
             os.mkdir(outdir)
         
-
-        outfile = 'cluster_out.fa'            
+        if repseq == True:
+            outfile = 'repseq_out.fa'
+            node, assembly = self.get_rep_seq().split("__")
+            nodes = {">"+node: assembly}
+            
+        else:
+            outfile = 'cluster_out.fa'
+            nodes = self.split_names()
+                   
         seq_out = open(outdir + "/" + outfile, 'w')
         
         #parallelise eventually. That's why i've written it to dictionaries first
-        for node, assembly in node_assembly_dict.items():
+        for node, assembly in nodes.items():
             f = open("/".join([assembly_dir, assembly]))
             for i in f:
                 if i.find(node)!=-1:
@@ -156,8 +138,9 @@ class Contig_Cluster(object):
 #        nodefind_awk = '''-v name=$node 'BEGIN{RS=">";FS="\n"}NR>1{if ($1~/name/) print ">"$0}\''''
 #        CMD = 'while read -r node <&3 && read -r assembly <&4; do awk {} $assembly; done 3< <(printf "{}") 4< <(printf "{}")'.format(nodefind_awk, nodestring, assemblystring)
 #        subprocess.call(['bash', '-c', CMD])
+     
     
-            
+    
 #what if I look for orientation of reads mapped from other assemblies? Shouldn't that be consistent too?
 #have to call from within retreieve_seqs for tempfiles to be accessible
     def gen_minibam(node_assembly_dict, bam_location, outdir = 'minibam_out'): #pass self into this?

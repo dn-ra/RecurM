@@ -129,53 +129,86 @@ class Nucmer_Match(object):
             -circular perfect
             -circular imperfect
             -circular complex
+            
+        also: flags for outcomes that haven't been programmed for yet
             '''
         
         '''labels to be applied'''
         orientation = None
         complexity = None
         
+        '''arrangement labels'''
+        arrange_a = None
+        arrange_b = None
+        
+        
+        '''iterate through alignments'''
         for align in range(len(self)): #for each aligned region
             seq_a = [self.hitstarts_1[align], self.hitstops_1[align]]
             seq_b = [self.hitstarts_2[align], self.hitstops_2[align]]
             
-            b_direction = 'forward' if seq_b[0] < seq_b[1] else 'reverse'
-            initial_coords = [seq_a, seq_b]
-            
+            orig_seq_b = seq_b #there has to be a better way than this. keeping orig_seq_b for testing linear perfect alignment
+            if seq_b[0] > seq_b[1]: #if reverse complement
+                seq_b = [a*-1 for a in seq_b] #switch to negative. This way logic can be treated the same
+                b_direction = 'reverse'
+            else:
+                b_direction = 'forward'
+                
             if align == 0:
+                orig_b_direction = b_direction
+                initial_coords = [seq_a, seq_b]
                 orientation = 'linear1'
-                if [min(seq_a), max(seq_a)] == [1, self.lengths[0]] and [min(seq_b), max(seq_b)] == [1, self.lengths[1]]:
+                if seq_a == [1, self.lengths[0]] and [min(orig_seq_b), max(orig_seq_b)] == [1, self.lengths[1]]: #using orig_seq_b to avoid problems with negative values
                     complexity = 'perfect'
                 else:
                     complexity = 'imperfect'
                         
             elif align ==1:
-                if min(seq_a) > max(initial_coords[0]): #if second alignment is outside the range of the first
+                '''seq_a arrangement'''
+                
+                if min(seq_a) > max(initial_coords[0]) or max(seq_a) < min(initial_coords[0]): #if second alignment is outside the range of the first
                     orientation = 'linear2'
-                    if b_direction == 'forward':
-                        if seq_b[0] < seq_b[1]: #if also forward (usually is)
-                            if seq_b[0] > initial_coords[1][1]: #if min greater than previous max
-                                complexity =  'imperfect'
-                            elif seq_b[1] < initial_coords[1][0]: #if max less than previous min
+                    arrange_a = 'outside'
+                elif min(seq_a) > min(initial_coords[0]) and max(seq_a) < max(initial_coords[0]): #if second alignment is completely within the first
+                    complexity = 'complex'
+                    arrange_a = 'within'
+                elif seq_a[0] > initial_coords[0][0] and seq_a[0] < initial_coords[0][1] and seq_a[1] > initial_coords[0][1]: ##second alignment straddles boundaries
+                    arrange_a = 'straddle'
+                
+                    if orig_b_direction == b_direction: #if directions of seq_b alignments agree
+                        if min(seq_b) > max(initial_coords[1]) or max(seq_b) < min(initial_coords[1]): # if second alignment of b is also out of range of 1st
+                            if ((seq_a[0] - initial_coords[0][0]) * (seq_b[0] - initial_coords[1][0])) > 0: #if the second alignments extend out in the same direction
+                                complexity = 'imperfect' #but still linear
+                            else: #not on same sides
                                 orientation = 'unknown'
-                                complexity = 'unknown'
+                                complexity = 'opposite sides'
                                 #because the second alignments are on opposite sides with no overlap. circular? 
-                            elif seq_b[0] > initial_coords[1][0] and seq_b[1] < initial_coords[1][1]: #if second alignment is completely within the first
-                                complexity = 'complex' #because of a repeat region
-                            elif seq_b[0] > initial_coords[1][0] and seq_b[0] < initial_coords[1][0]:#straddles the boundary
-                                if seq_b[1] > initial_coords[1][1]:
-                                    complexity = 'complex'
-                        else:
-                            complexity = 'unknown' #if one alignment forward and another reverse, implication is for a copmlex rearrangement/repeat. set flag here to investigate further
-                    elif b_direction == 'reverse':
-                        if seq_b[1] < seq_b[0]: #if also reverse (usually is)
-                            if seq_b[1] > initial_coords[1][0]: # if min greater than previous max
-                                complexity = 'imperfect'
-                            else:
+
+                        elif max(seq_b) < max(initial_coords[1]) and min(seq_b) > min(initial_coords[1]): #if second alignment is completely within the first
+                            complexity = 'complex' #because of a repeat region #but still linear
+                        elif seq_b[0] > initial_coords[1][0] and seq_b[0] < initial_coords[1][0]:#straddles the boundary
+                            if seq_b[1] > initial_coords[1][1]:
                                 complexity = 'complex'
-                        else:
-                            complexity = 'unknown'
-                elif min(seq_a) > initial_coords[0][0] and max(seq_a) < initial_coords[0][1]: #if second alignment is completely within the first
+                    else:
+                        complexity = 'different directions' #if one alignment forward and another reverse, implication is for a copmlex rearrangement/repeat. set flag here to investigate further
+
+
+
+                '''seq_b arrangement'''
+                if min(seq_b) > max(initial_coords[1]) or max(seq_b) < min(initial_coords[1]): # if second alignment of b is also out of range of 1st
+                    arrange_b = 'outside'
+                elif max(seq_b) < max(initial_coords[1]) and min(seq_b) > min(initial_coords[1]): #if second alignment is completely within the first
+                    arrange_b = 'within'
+                elif seq_b[0] > initial_coords[1][0] and seq_b[0] < initial_coords[1][0] and seq_b[1] > max(initial_coords[1]):#straddles the boundary
+                    arrange_b = 'straddle_right'
+                elif seq_b[1] > initial_coords[1][0] and seq_b[1] < initial_coords[1][0] and seq_b[0] < min(initial_coords[1]):#straddles the boundary
+                    arrange_b = 'straddle_left'
+                
+                
+                
+                '''interpret arrangements'''
+                
+                if min(seq_a) > min(initial_coords[0]) and max(seq_a) < max(initial_coords[0]): #if second alignment is completely within the first
                     complexity = 'complex'
                 elif seq_a[0] > initial_coords[0][0] and seq_a[0] < initial_coords[0][1]: ##second alignment straddles boundaries
                     if seq_a[1] > initial_coords[0][1]: # if seq_a straddles boundaries of alignment 1
@@ -258,7 +291,7 @@ def deltaread(file): #if reading in a whole bunch of .delta files, record these 
                     del matchdeets[:]
                 #THEN - read in match details
                 match = line.replace('>', '').split()
-                if match[0] == match[1]: #skip if it's a match to itself
+                if match[0] == match[1]: #skip if it's a match to itself << this didn't work! still showing matches matched to itself. Found this because after cluster step I had clusters of size = 1!
                     self_match_count +=1 #for use in assert. But that's harder to do than originally planned
                     continue
                 else:

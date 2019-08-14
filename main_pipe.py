@@ -51,8 +51,8 @@ elif cluster_method == 'union-find':
     links = [m.seqs for m in collated_sig_matches]
     for link in links:
         union_find_cluster.union(link[0], link[1], disjoint_set_array)
-        union_find_cluster.cluster_conversion(disjoint_set_array)
-        clusters = union_find_cluster.extract_clusters(disjoint_set_array)
+    union_find_cluster.cluster_conversion(disjoint_set_array)
+    clusters = union_find_cluster.extract_clusters(disjoint_set_array)
 
 single_linkage_cluster.sort_clusters(clusters)
 #exit type is list of Contig_Cluster objects

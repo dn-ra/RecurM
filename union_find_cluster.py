@@ -78,4 +78,4 @@ def cluster_chain(node, c_num, node_parent_array):
     
 def find_rep():
     '''find the most represented node to pass on for analysis'''
-        
+    return None

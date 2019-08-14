@@ -107,7 +107,7 @@ class Contig_Cluster(object):
         
         if repseq == True:
             outfile = 'repseq_out.fa'
-            node, assembly = self.get_rep_seq().split("__")
+            assembly, node = self.get_rep_seq().split("__")
             nodes = {">"+node: assembly}
             
         else:

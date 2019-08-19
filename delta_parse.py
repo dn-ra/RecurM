@@ -305,6 +305,7 @@ def deltaread(file): #if reading in a whole bunch of .delta files, record these 
         matchdeets = []
         seen_matches = []
         name = False #do we have a match ready to write yet?
+        match = None
         delta = [] #name of dictionary for storage of Nucmer_Match objects
         for line in f.readlines(): #parsing of line with match info
             if line.startswith('>'):
@@ -334,7 +335,8 @@ def deltaread(file): #if reading in a whole bunch of .delta files, record these 
                 recording = False
     
     #flush last match to  nucmer_match object
-    delta.append(Nucmer_Match(match, matchdeets))
+    if name:
+        delta.append(Nucmer_Match(match, matchdeets))
 
     deltadict = {}
     deltadict[deltaname] = delta

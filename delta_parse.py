@@ -121,21 +121,22 @@ class Nucmer_Match(object):
     
     
     def label(self):
+        #TODO - tighten definitions
+        
         '''
         options = 
-            -linear perfect
-            -linear imperfect
-            -linear complex
-            -circular perfect
-            -circular imperfect
-            -circular complex
+            -linear/circular
+            -simple/complex (or 3 regions)
+            -perfect/imperfect
+            -bring a fourth or somehow indicate when aligned terminally (perfect) but there are gaps in the middle
             
         also: flags for outcomes that haven't been programmed for yet
             '''
         
-        '''labels to be applied'''
+        '''match labels'''
         orientation = None
         complexity = None
+        alignment = None
         
         '''arrangement labels'''
         arrange_a = None
@@ -154,100 +155,125 @@ class Nucmer_Match(object):
             else:
                 b_direction = 'forward'
                 
+            #first alignment block 
             if align == 0:
                 orig_b_direction = b_direction
                 initial_coords = [seq_a, seq_b]
-                orientation = 'linear1'
                 if seq_a == [1, self.lengths[0]] and [min(orig_seq_b), max(orig_seq_b)] == [1, self.lengths[1]]: #using orig_seq_b to avoid problems with negative values
-                    complexity = 'perfect'
+                    alignment = 'perfect'
                 else:
-                    complexity = 'imperfect'
-                        
+                    alignment = 'imperfect'
+                orientation = 'linear'
+                complexity = 'simple'
+                
+            #second alignment block    
             elif align ==1:
+                #if 2 blocks are in different directions
+                if orig_b_direction != b_direction:
+                    orientation = 'different directions'
+                    #flag and break for further programming
+                    break
+                
+                
+                #place alignment perfect or imperfect at the end? how do I treat it if the alignment goes all the way to the ends but there is some sequence in the middle that isn't aligned anywhere?
+                
                 '''seq_a arrangement'''
                 
                 if min(seq_a) > max(initial_coords[0]) or max(seq_a) < min(initial_coords[0]): #if second alignment is outside the range of the first
-                    orientation = 'linear2'
                     arrange_a = 'outside'
                 elif min(seq_a) > min(initial_coords[0]) and max(seq_a) < max(initial_coords[0]): #if second alignment is completely within the first
-                    complexity = 'complex'
                     arrange_a = 'within'
                 elif seq_a[0] > initial_coords[0][0] and seq_a[0] < initial_coords[0][1] and seq_a[1] > initial_coords[0][1]: ##second alignment straddles boundaries
                     arrange_a = 'straddle'
+                else:
+                    arrange_a = '' #if not caught
                 
-                    if orig_b_direction == b_direction: #if directions of seq_b alignments agree
-                        if min(seq_b) > max(initial_coords[1]) or max(seq_b) < min(initial_coords[1]): # if second alignment of b is also out of range of 1st
-                            if ((seq_a[0] - initial_coords[0][0]) * (seq_b[0] - initial_coords[1][0])) > 0: #if the second alignments extend out in the same direction
-                                complexity = 'imperfect' #but still linear
-                            else: #not on same sides
-                                orientation = 'unknown'
-                                complexity = 'opposite sides'
-                                #because the second alignments are on opposite sides with no overlap. circular? 
-
-                        elif max(seq_b) < max(initial_coords[1]) and min(seq_b) > min(initial_coords[1]): #if second alignment is completely within the first
-                            complexity = 'complex' #because of a repeat region #but still linear
-                        elif seq_b[0] > initial_coords[1][0] and seq_b[0] < initial_coords[1][0]:#straddles the boundary
-                            if seq_b[1] > initial_coords[1][1]:
-                                complexity = 'complex'
-                    else:
-                        complexity = 'different directions' #if one alignment forward and another reverse, implication is for a copmlex rearrangement/repeat. set flag here to investigate further
-
-
 
                 '''seq_b arrangement'''
-                if min(seq_b) > max(initial_coords[1]) or max(seq_b) < min(initial_coords[1]): # if second alignment of b is also out of range of 1st
-                    arrange_b = 'outside'
+                if min(seq_b) > max(initial_coords[1]): # if second alignment of b is also out of range of 1st
+                    arrange_b = 'outside right'
+                elif  max(seq_b) < min(initial_coords[1]):
+                    arrange_b = 'outside left'
                 elif max(seq_b) < max(initial_coords[1]) and min(seq_b) > min(initial_coords[1]): #if second alignment is completely within the first
                     arrange_b = 'within'
-                elif seq_b[0] > initial_coords[1][0] and seq_b[0] < initial_coords[1][0] and seq_b[1] > max(initial_coords[1]):#straddles the boundary
+                elif seq_b[0] > initial_coords[1][0] and seq_b[0] < initial_coords[1][1] and seq_b[1] > max(initial_coords[1]):#straddles the boundary
                     arrange_b = 'straddle_right'
-                elif seq_b[1] > initial_coords[1][0] and seq_b[1] < initial_coords[1][0] and seq_b[0] < min(initial_coords[1]):#straddles the boundary
+                elif seq_b[1] > initial_coords[1][0] and seq_b[1] < initial_coords[1][1] and seq_b[0] < min(initial_coords[1]):#straddles the boundary
                     arrange_b = 'straddle_left'
+                else:
+                    arrange_b = '' #if not caught
                 
                 
                 
                 '''interpret arrangements'''
                 
-                if min(seq_a) > min(initial_coords[0]) and max(seq_a) < max(initial_coords[0]): #if second alignment is completely within the first
-                    complexity = 'complex'
-                elif seq_a[0] > initial_coords[0][0] and seq_a[0] < initial_coords[0][1]: ##second alignment straddles boundaries
-                    if seq_a[1] > initial_coords[0][1]: # if seq_a straddles boundaries of alignment 1
-                        if b_direction == 'forward':
-                            if seq_b[0] < seq_b[1]: #also forward
-                                if seq_b[0] > initial_coords[1][0] and seq_b[0] < initial_coords[1][1]:
-                                    if seq_b[1] > initial_coords[1][1]: # if seq_b straddles boundaries of alignment 1
-                                        orientation = 'circular1'
-                                        if [seq_b[0], seq_b[1]] == [1, self.lengths[1]] and [seq_a[0], seq_a[1]] == [1, self.lengths[0]]:
-                                             complexity = 'perfect'
-                                        else:
-                                            complexity = 'imperfect'
-                                    else:
-                                        orientation = 'not caught1'
-                                        complexity = 'not caught1'
-                                else:
-                                    orientation = 'not caught2'
-                                    complexity = 'not caught2'
-                            orientation = 'not caught3'
-                            complexity = 'not caught3'
-                        elif b_direction == 'reverse':
-                            if seq_b[0] > seq_b[1]: #also reverse
-                                if seq_b[1] < initial_coords[1][0] and seq_b[1] < initial_coords[1][0]:
-                                    if seq_b[0] > initial_coords[1][0]: 
-                                        if [initial_coords[1][0], seq_b[1]] == [self.lengths[1], 1] and [initial_coords[0][0], seq_a[1]] == [1, self.lengths[0]]:
-                                            complexity = 'perfect'
-                                        else:
-                                            complexity = 'imperfect'
+                if arrange_a == 'within':
+                    if arrange_b == 'within':
+                        #orientation and alignment should already be set
+                        complexity = 'complex'
+                    elif arrange_b == 'outside left' or arrange_b == 'outside right':
+                        complexity = 'complex'
+                        pass
+                    elif arrange_b == 'straddle_left' or arrange_b == 'straddle_right':
+                        complexity = 'complex'
+                    else:
+                        complexity = 'not caught'
                 
-                #last pass in case conditions aren't caught
+                elif arrange_a =='outside':
+                    if arrange_b == 'within':
+                        complexity = 'complex'
+                    elif arrange_b == 'outside right':
+                        complexity = 'complex'
+                        orientation = 'linear'
+                    elif arrange_b == 'outside left':
+                        orientation = 'circular'
+                        complexity = 'complex'
+                        #this is the complex circular arrangement. no overlap but clearly in opposite directions. Is it actually circular?
+                    elif arrange_b == 'straddle_left':
+                        complexity = 'complex'
+                        orientation = 'circular'
+                    elif arrange_b == 'straddle_right':
+                        complexity = 'complex'
+                        orientation= 'linear'
+                    else:
+                        complexity = 'not caught'
+                
+                elif arrange_a =='straddle':
+                    if arrange_b == 'within':
+                        complexity = 'complex'
+                        orientation = 'linear'
+                    elif arrange_b == 'outside right':
+                        complexity = 'complex'
+                        orientation = 'linear' 
+                    elif arrange_b == 'outside left':
+                        complexity = 'complex'
+                        orientation = 'circular'
+                        #is this a circle that doesn't fully enclose?
+                    elif arrange_b == 'straddle_left':
+                        orientation = 'circular'
+                        complexity = 'simple'
+                    elif arrange_b == 'straddle_right':
+                        orientation = 'linear'
+                        complexity = 'complex'
+                    else:
+                        complexity = 'not caught'
                 else:
-                    orientation = 'not caught4'
-                    complexity = 'not caught4'
-            
+                    complexity = 'not caught'
+                    
+            #third alignment blocks 
             elif align > 1:
                 #always set as complex when there are more than 2 aligned regions?
                 complexity = '3 regions'
-                    
-        return [orientation, complexity, align]
+                #flag and break for further programming
+                break
+            
+        #check if alignment as all the way to the end
+        if [min(self.hitstarts_1), max(self.hitstops_1)] == [1, self.lengths[0]] and [min(self.hitstarts_2 + self.hitstops_2), max(self.hitstarts_2 + self.hitstops_2)] == [1,self.lengths[1]]:
+            alignment = 'perfect'
+        else:
+            alignment = 'imperfect'
+            
+        return [orientation, complexity, alignment]
             
             
 #TODO - promote to sig_match class

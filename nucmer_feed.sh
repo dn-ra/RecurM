@@ -20,8 +20,8 @@ touch assemblies_iter_built.fa
 QUERY_SIZE=0
 
 for ((i=0; i<$#-1; i++)); do
-CURR_REF="${ASSEMBLIES["$i"]}";
-CURR_QUE="${ASSEMBLIES[$(expr $i + 1)]}";
+CURR_QUE="${ASSEMBLIES["$i"]}";
+CURR_REF="${ASSEMBLIES[$(expr $i + 1)]}";
 ITER=$(expr $i + 1);
 
 SEQ_COUNT=$(grep '>' $CURR_QUE | wc -l);

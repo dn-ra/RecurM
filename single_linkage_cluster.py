@@ -9,7 +9,7 @@ import re
 import subprocess
 from logging import warning #also import exceptions?
 import csv
-
+import union_find_cluster
 
 #pattern to determine if contig name is in spades format
 spadespattern = re.compile(r'.*NODE_[0-9]*_', re.UNICODE)
@@ -130,6 +130,8 @@ class Contig_Cluster(object):
                             wholeseq = True
                         else:
                             seq_out.write(line)
+        
+        
         seq_out.close()
         
         return None

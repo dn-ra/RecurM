@@ -38,15 +38,32 @@ g_file = {}
 
 
 seqs = {}
+bin_matches = {} #dictionary of each repeatedly assembled sequence with it's associated match from the bins
 #forge connection between contigs and their bins
 for key, value in d.items():
     bin_ref = key.split("---")[1]
     for m in value:
         m.seqs[1] = bin_ref+"__"+m.seqs[1]
         #extract sequences for manipulation
-        seqs [m.seqs[1]] = retrieve_bin_seq(bin_dir, m) #seq_object dict to be passed into remove_span function
-        
- 
+       # seqs [m.seqs[1]] = retrieve_bin_seq(bin_dir, m) #seq_object dict to be passed into remove_span function
+        try:
+            bin_matches[m.seqs[0]].append(m)
+        except KeyError:
+            bin_matches[m.seqs[0]] = [m]
+
+bin_counts = {} #dictionary of # of bins where each node (the key) is found at threshold value
+for key, value in bin_matches.items():
+    count = 0
+    for m in value:
+        if m.apply_threshold(threshold = 0.90) == True:
+            count +=1
+    bin_counts[key] = count
+
+bin_found = [k for k,v in bin_counts.items() if v ==1]
+
+for k in bin_found:
+    all_stats = [m.gen_statistics() for m in bin_matches[k]]
+    #find any more matches in which the whole of the fragment forms part of a larger assembled contig. That would be bad news.
     
     
 '''functions in use here'''    

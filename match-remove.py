@@ -22,7 +22,7 @@ import delta_parse
 
 
 '''other'''
-import intervals
+#import intervals
 import os
 import sys
 
@@ -122,12 +122,12 @@ for k,v in bin_finds.items():
 '''construct dictionary of sequences to remove from bins'''
 for matches in bin_finds.values():
     for m in matches:
-        if remove_contig(m): # a more robust measurement that accounts for overlapping regions. Probably not necessary at this point seeing that it has already passed the apply_threshold step. but this intervals method should really be replacing the apply_threshold method in future
-            bin_ref, seq_name = m.seqs[1].split("__")
-            try:
-                bin_contigs_remove[bin_ref] += seq_name
-            except KeyError:
-                bin_contigs_remove[bin_ref] = [ seq_name ]
+        #if remove_contig(m): # a more robust measurement that accounts for overlapping regions. Probably not necessary at this point seeing that it has already passed the apply_threshold step. but this intervals method should really be replacing the apply_threshold method in future
+        bin_ref, seq_name = m.seqs[1].split("__")
+        try:
+            bin_contigs_remove[bin_ref] += seq_name
+        except KeyError:
+            bin_contigs_remove[bin_ref] = [ seq_name ]
        
 
 

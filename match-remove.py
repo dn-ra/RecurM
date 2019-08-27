@@ -71,7 +71,7 @@ sys.stdout.flush()
 derep_bins = []
 f = open(derep_bins_file, 'r')
 for line in f:
-    derep_bins.append(line.strip())
+    derep_bins.append(line.strip()+'.fna')
 f.close()
 
 
@@ -137,7 +137,7 @@ f = open(exit_bin_file, 'w')
 for file in derep_bins:
     print('processing {} in dereplicated bins'.format(file))
     sys.stdout.flush()
-    for seq in SeqIO.parse(handle = os.path.join(bin_dir, file+'.fna'), format = 'fasta', alphabet=IUPAC.unambiguous_dna):
+    for seq in SeqIO.parse(handle = os.path.join(bin_dir, file), format = 'fasta', alphabet=IUPAC.unambiguous_dna):
         if seq.id in bin_contigs_remove[file]:
             continue
         else:

@@ -137,14 +137,20 @@ f = open(exit_bin_file, 'w')
 for file in derep_bins:
     print('processing {} in dereplicated bins'.format(file))
     sys.stdout.flush()
-    for seq in SeqIO.parse(handle = os.path.join(bin_dir, file), format = 'fasta', alphabet=IUPAC.unambiguous_dna):
-        if seq.id in bin_contigs_remove[file]:
-            continue
-        else:
-            seq.id = file+"~"+seq.id
-            SeqIO.write(seq, f, format='fasta')
     
-                    
+    if file in bin_contigs_remove.keys():
+        for seq in SeqIO.parse(handle = os.path.join(bin_dir, file), format = 'fasta', alphabet=IUPAC.unambiguous_dna):
+                if seq.id in bin_contigs_remove[file]:
+                    continue #don't copy. It's in my repeated elements
+                else:
+                    seq.id = file+"~"+seq.id
+                    SeqIO.write(seq, f, format='fasta')
+    else:
+        for seq in SeqIO.parse(handle = os.path.join(bin_dir, file), format = 'fasta', alphabet=IUPAC.unambiguous_dna):
+            seq.id = file+"~"+seq.id
+            SeqIO.write(seq, f, format='fasta')         
+#has to be a more succint way to write all this??^^
+            
 for num, seq in enumerate(SeqIO.parse(handle = repseqs_loc, format='fasta', alphabet = IUPAC.unambiguous_dna)):
     seq.id = 'cluster_{}~{}'.format(num, seq.id)
     SeqIO.write(seq, f, format = 'fasta')

@@ -24,7 +24,7 @@ import delta_parse
 '''other'''
 import intervals
 import os
-
+import sys
 
 '''set locations and files'''
 bin_dir = '/srv/home/s4204666/abisko/aterrible_bins/12_assembly73_individuals_flat20160115/bins_unique_contig_names.shorter' #location of bin fasta files
@@ -64,6 +64,10 @@ def remove_contig(match_object, target = 2):
 
 
 '''start process'''
+
+print('building bin linkages')
+sys.stdout.flush()
+
 derep_bins = []
 f = open(derep_bins_file, 'r')
 for line in f:
@@ -131,6 +135,8 @@ for matches in bin_finds.values():
 
 f = open(exit_bin_file, 'w')
 for file in derep_bins:
+    print('processing {} in dereplicated bins'.format(file))
+    sys.stdout.flush()
     for seq in SeqIO.parse(handle = os.path.join(bin_dir, file+'.fna'), format = 'fasta', alphabet=IUPAC.unambiguous_dna):
         if seq.id in bin_contigs_remove[file]:
             continue

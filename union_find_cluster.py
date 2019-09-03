@@ -79,3 +79,14 @@ def cluster_chain(node, c_num, node_parent_array):
 def find_rep():
     '''find the most represented node to pass on for analysis'''
     return None
+
+
+def union_find_pipe(collated_sig_matches):
+    disjoint_set_array = {}
+    links = [m.seqs for m in collated_sig_matches]
+    for link in links:
+        union(link[0], link[1], disjoint_set_array)
+    cluster_conversion(disjoint_set_array)
+    clusters = extract_clusters(disjoint_set_array)
+    
+    return clusters

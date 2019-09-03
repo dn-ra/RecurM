@@ -10,6 +10,7 @@ import delta_parse
 import os
 import pickle
 import union_find_cluster
+import sys
 
 #set locaiton of delta files
 delta_dir = '/srv/home/s4204666/abisko/dan/repeatm_tests/all_assemblies/filtered_2000bp/nucmer_feed_out'
@@ -52,7 +53,7 @@ for file in os.listdir(delta_dir):
             fragments.append(m)
         elif m.seqs[1] in sigmatch_set:
             fragments.append(m)
-                    
+    sys.stdout.flush()
         #exit type is list of Nucmer_Match objects (sig_matches) + list of Nucmer_Match objects (fragments) that map to the sig_match objects
 
 #save progress

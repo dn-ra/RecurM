@@ -40,7 +40,7 @@ for file in os.listdir(delta_dir):
     firstpass_fragments = []
     for m in next(iter(delta.values())):
         stats = m.gen_statistics()
-        if m.apply_threshold(treshold = 0.90, stats = stats) == True:
+        if m.apply_threshold(threshold = 0.90, stats = stats) == True:
             collated_sig_matches.append(m)
             sigmatch_set.add([m.seqs])
         elif m.is_fragment(upperthreshold = 0.90, lowerthreshold = 0.90, stats = stats):

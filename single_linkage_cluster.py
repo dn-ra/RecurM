@@ -122,7 +122,7 @@ class Contig_Cluster(object):
             f = open("/".join([assembly_dir, assembly]))
             for i in f:
                 if i.find(node)!=-1:
-                    seq_out.write(i)
+                    seq_out.write(assembly+"__"+i)
                     wholeseq =False #flag to tell me if I've taken the whole sequence yet
                     while wholeseq ==False:
                         line = next(f)
@@ -210,8 +210,10 @@ len(match) |                                      |
         #selects a representative contig (the one with most matches) to test match alignment orientations
         labels = []
         
+        repseq = self.get_rep_seq()
+        
         #TODO - finding top_n has been moved into rep_seq function. Make sure that is connected in here to pass into label_finder
-        query_matches = [m for m in self.matches if self.repseq in m.seqs]
+        query_matches = [m for m in self.matches if repseq in m.seqs]
         
         for m in query_matches:
             labels.append(m.label())
@@ -224,12 +226,30 @@ len(match) |                                      |
         #would be expensive to do but would give confidence as to where alignments tend to happen.
         
         
-        
         return labels
     
-
-#TODO - function to extract clusters or contigs that map to complete bins?
-
+    
+    def find_larger(self, cluster_objs, frag_matches):
+        #TODO - not functioning yet
+        '''find clusters that might envelop the sequences in the given cluster'''
+        frag_elements = self.find_fragments(frag_matches)
+        
+        outside_nodes = []
+        for f in frag_elements:
+            for s in f.seqs:
+                if s not in self.nodes:
+                    outside_nodes.append(s)
+                    break
+            #related_clusters = [c for c in cluster_objs if ]
+        
+    def find_fragments(self, frag_matches):
+        '''find fragments that constitute the same sequence in a truncated assembly'''
+        frag_elements = []
+        for m in frag_matches:
+            if m.seqs[0] in self.nodes or m.seqs[1] in self.nodes:
+                frag_elements.append(m)
+        
+        return frag_elements
 
 
 '''---------------------End class definition-------------------------------'''
@@ -273,7 +293,6 @@ def build_sig_match_dict(sig_matches): #to build dictionary of nodes linked to t
     return sig_match_dict
     
 def cluster_nucmer_matches(sig_matches): #sig_matches is a list of Nucmer_Match objects
-    sig_match_dict = build_sig_match_dict(sig_matches)
     match_links = [m.seqs for m in sig_matches]
     cluster_objs = []
 

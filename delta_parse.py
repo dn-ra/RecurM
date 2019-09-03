@@ -336,7 +336,6 @@ file = 'C:\\Users\\dan_r\\Documents\\Honours_Data\\nucmertest\\testsplitvserrors
 def deltaread(file): #if reading in a whole bunch of .delta files, record these in a list to preserve function of later funcitons
     '''parse delta files'''
     with open(file, 'r') as f:
-        self_match_count = 0
         inputline = f.readline().strip().split(" ")
         deltaname = '---'.join([os.path.basename(elem) for elem in inputline])
         recording = False #"recording" (boolean variable) is a switcher that will determine whether the line is being stored or not (ie. to ignore positions of indels)
@@ -350,14 +349,14 @@ def deltaread(file): #if reading in a whole bunch of .delta files, record these 
                 if name: #skip flushing to dictionary if this is the first match record
                     #FIRST - flush previous hit to a nucmer_match object
                     '''if [match[1], match[0]] not in seen_matches: #if reverse has not already been read <<< ignore this step. takes too long'''
-                    delta.append(Nucmer_Match(match, matchdeets))  
-                    seen_matches.append([match[0], match[1]])
+                    delta.append(Nucmer_Match(match, matchdeets))
                     #remove alignment details of previous match
                     del matchdeets[:]
                 #THEN - read in match details
                 match = line.replace('>', '').split()
                 if match[0] == match[1]: #skip if it's a match to itself << this didn't work! still showing matches matched to itself. Found this because after cluster step I had clusters of size = 1!
-                    self_match_count +=1 #for use in assert. But that's harder to do than originally planned
+                    name = False
+                    recording = False
                     continue
                 else:
                     recording = True

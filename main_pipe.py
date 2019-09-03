@@ -46,8 +46,8 @@ for file in os.listdir(delta_dir):
             elif m.is_fragment(upperthreshold = 0.90, lowerthreshold = 0.90, stats = stats):
                 firstpass_fragments.append(m)
     
-        #all match objects are read in. keep only those fragments that map to full matches    
-        for m in firstpass_fragments;:
+        #all match objects are read in. keep only those fragments that map to full matches
+        for m in firstpass_fragments:
             if m.seqs[0] in sigmatch_set:
                 fragments.append(m)
             elif m.seqs[1] in sigmatch_set:
@@ -72,21 +72,25 @@ elif cluster_method == 'union-find':
     clusters = union_find_cluster.union_find_pipe(collated_sig_matches)
 
 single_linkage_cluster.sort_clusters(clusters)
+
+f = open('pickled_cluster_objs', 'wb')
+pickle.dump(clusters, f)
+f.close()
 #exit type is list of Contig_Cluster objects
 
 #find fragments linked to clusters
-frag_seqs = [m.seqs.index(min(m.lengths)) for m in fragments]
-
-
-
-
-#run analysis on clusters
-for c in clusters:
-    c.retrieve_seqs(assembly_dir = assembly_dir) #locations set at beginning of script. Does not return anything
-    
-f = open('pickled_clusters', 'wb')
-pickle.dump(clusters, f)
-f.close()
+#frag_seqs = [m.seqs.index(min(m.lengths)) for m in fragments]
+#
+#
+#
+#
+##run analysis on clusters
+#for c in clusters:
+#    c.retrieve_seqs(assembly_dir = assembly_dir) #locations set at beginning of script. Does not return anything
+#    
+#f = open('pickled_clusters', 'wb')
+#pickle.dump(clusters, f)
+#f.close()
 
 
     

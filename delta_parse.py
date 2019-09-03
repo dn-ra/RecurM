@@ -12,7 +12,7 @@ TODOS -
     -function for detecting and dealing with overlap situations
     -partial match situaitons
     -Don't just pass significant Nucmer_Matches into a list. Make a subclass with inherited functions, add threshold level attribute. 
-
+    -Change alignment % from total length to an interval data type
 '''
 
 
@@ -20,7 +20,7 @@ TODOS -
 imports
     '''
 import os
-
+import intervals
 
 
 
@@ -75,20 +75,44 @@ class Nucmer_Match(object):
     
     #TODO - fix abs to put in correct place
     def get_align1(self):
-        matchlength_1 = sum([float(self.hitstops_1[i]) - self.hitstarts_1[i] for i in range(len(self))])
-        alignment_ratio_1 = abs(matchlength_1/self.lengths[0])
+        #Earlier method
+        #matchlength_1 = sum([float(self.hitstops_1[i]) - self.hitstarts_1[i] for i in range(len(self))])
+        #alignment_ratio_1 = abs(matchlength_1/self.lengths[0])
+        
+        for i in range(len(self)):
+            span = intervals.closed(getattr(self, 'hitstarts_{}'.format(1))[i], getattr(self, 'hitstops_{}'.format(1))[i]) #minus one for 0-based indexing
+            if i ==0:
+                c_span = span
+            else:
+                c_span = c_span | span
+        total_length = sum([ivl.upper - ivl.lower for ivl in c_span]) #must convert list output of upper and lower to int
+        alignment_ratio_1 = total_length / self.lengths[0]
+        
         
         return alignment_ratio_1
     
     def get_align2(self):
     
-        matchlength_2 = sum([float(self.hitstops_2[i]) - self.hitstarts_2[i] for i in range(len(self))])
-        alignment_ratio_2 = abs(matchlength_2/self.lengths[1])
+        #Earlier method
+        #matchlength_2 = sum([float(self.hitstops_2[i]) - self.hitstarts_2[i] for i in range(len(self))])
+        #alignment_ratio_2 = abs(matchlength_2/self.lengths[1])
         
+        for i in range(len(self)):
+            #need to handle reverse complement sequence coordinates
+            coords = [self.hitstarts_2[i], self.hitstops_2[i]]
+            
+            span = intervals.closed(min(coords), max(coords))
+            if i ==0:
+                c_span = span
+            else:
+                c_span = c_span | span
+        total_length = sum([ivl.upper - ivl.lower for ivl in c_span])
+        alignment_ratio_2 = total_length / self.lengths[1]
+
         return alignment_ratio_2
     
     def get_lengthratio(self):
-        length_ratio = float(self.lengths[0]) / self.lengths[1]
+        length_ratio = float((min(self.lengths)) / max(self.lengths))
         
         return length_ratio
         
@@ -104,21 +128,35 @@ class Nucmer_Match(object):
         alignment_ratio_1 = self.get_align1()
         
         alignment_ratio_2 = self.get_align2()
-
         ANI = self.get_ani()         
            
         
         return length_ratio, alignment_ratio_1, alignment_ratio_2, ANI
         pass
     
-    def apply_threshold(self, threshold = 0.97):
+    def apply_threshold(self, threshold = 0.97, stats = False): #option to precalculate stats 
         passthresh = False
-        stats = self.gen_statistics()
+        if stats == False:
+            stats = self.gen_statistics()
+            
         if all(stat >= threshold for stat in stats):
             passthresh = True
             
         return passthresh
     
+    
+    def is_fragment(self, upperthreshold = 0.9, lowerthreshold = 0.9, stats = False): #option to precalculate stats
+        if stats == False:
+            stats = self.gen_statistics()
+            
+        min_align = min(stats[1:3])
+        max_align = max(stats[1:3])
+        ani = stats[3]  
+        if max_align > upperthreshold and min_align < lowerthreshold and ani > upperthreshold:
+            return True
+    
+        else:
+            return False
     
     def label(self):
         #TODO - tighten definitions

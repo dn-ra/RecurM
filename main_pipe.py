@@ -30,28 +30,28 @@ fragments = []
 
 #read in nucmer matches of each deltafile
 for file in os.listdir(delta_dir):
-    if file.endswith('.delta'):
-        print('parsing {}'.format(file))
-        delta = delta_parse.deltaread(delta_dir+'/'+file)
-        #exit type is dictionary
-        
-        #threshold all matches and collate
-        print('thresholding {}'.format(file))
-        firstpass_fragments = []
-        for m in next(iter(delta.values())):
-            stats = m.gen_statistics()
-            if m.apply_threshold(treshold = 0.90, stats = stats) == True:
-                collated_sig_matches.append(m)
-                sigmatch_set.add([m.seqs])
-            elif m.is_fragment(upperthreshold = 0.90, lowerthreshold = 0.90, stats = stats):
-                firstpass_fragments.append(m)
+#if file.endswith('.delta'):
+    print('parsing {}'.format(file))
+    delta = delta_parse.deltaread(delta_dir+'/'+file)
+    #exit type is dictionary
     
-        #all match objects are read in. keep only those fragments that map to full matches
-        for m in firstpass_fragments:
-            if m.seqs[0] in sigmatch_set:
-                fragments.append(m)
-            elif m.seqs[1] in sigmatch_set:
-                fragments.append(m)
+    #threshold all matches and collate
+    print('thresholding {}'.format(file))
+    firstpass_fragments = []
+    for m in next(iter(delta.values())):
+        stats = m.gen_statistics()
+        if m.apply_threshold(treshold = 0.90, stats = stats) == True:
+            collated_sig_matches.append(m)
+            sigmatch_set.add([m.seqs])
+        elif m.is_fragment(upperthreshold = 0.90, lowerthreshold = 0.90, stats = stats):
+            firstpass_fragments.append(m)
+
+    #all match objects are read in. keep only those fragments that map to full matches
+    for m in firstpass_fragments:
+        if m.seqs[0] in sigmatch_set:
+            fragments.append(m)
+        elif m.seqs[1] in sigmatch_set:
+            fragments.append(m)
                     
         #exit type is list of Nucmer_Match objects (sig_matches) + list of Nucmer_Match objects (fragments) that map to the sig_match objects
 

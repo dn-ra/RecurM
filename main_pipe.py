@@ -42,7 +42,7 @@ for file in os.listdir(delta_dir):
         stats = m.gen_statistics()
         if m.apply_threshold(threshold = 0.90, stats = stats) == True:
             collated_sig_matches.append(m)
-            sigmatch_set.add([m.seqs])
+            sigmatch_set.update(set(m.seqs))
         elif m.is_fragment(upperthreshold = 0.90, lowerthreshold = 0.90, stats = stats):
             firstpass_fragments.append(m)
 

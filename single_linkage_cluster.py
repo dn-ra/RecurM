@@ -1,4 +1,10 @@
-'''To be used here for testing of single_contig clustering from delta match files'''
+"""
+A module for use in RepeatM. See: github.com/wwood/RepeatM
+
+@author: Daniel Rawlinson, Australian Centre for Ecogenomics (ACE)
+@email: daniel.rawlinson@uqconnect.edu.au
+"""
+
 
 '''
     imports
@@ -11,6 +17,9 @@ from logging import warning #also import exceptions?
 import csv
 import union_find_cluster
 
+
+
+'''constants'''
 #pattern to determine if contig name is in spades format
 spadespattern = re.compile(r'.*NODE_[0-9]*_', re.UNICODE)
 
@@ -231,7 +240,7 @@ len(match) |                                      |
         return labels
     
     
-    def find_larger(self, cluster_objs, frag_matches):
+    def find_larger(self, graph):
         #TODO - not functioning yet
         '''find clusters that might envelop the sequences in the given cluster'''
         frag_elements = self.find_fragments(frag_matches)

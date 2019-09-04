@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-A library for parsing and handling of information form nucmer's delta outfile. For use in RepeatM contig matching.
+A library for parsing and handling of information form nucmer's delta outfile.
+For use in RepeatM. See: github.com/wwood/RepeatM
 
 Created on Thu May 30 13:42:15 2019
 
@@ -22,6 +23,7 @@ imports
 import os
 import intervals
 
+'''constants'''
 
 
 '''------------------------begin class definition---------------------------'''
@@ -340,7 +342,6 @@ def deltaread(file): #if reading in a whole bunch of .delta files, record these 
         deltaname = '---'.join([os.path.basename(elem) for elem in inputline])
         recording = False #"recording" (boolean variable) is a switcher that will determine whether the line is being stored or not (ie. to ignore positions of indels)
         matchdeets = []
-        seen_matches = []
         name = False #do we have a match ready to write yet?
         match = None
         delta = [] #name of dictionary for storage of Nucmer_Match objects

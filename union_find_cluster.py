@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Aug  9 15:43:35 2019
+Method for clustering match objects that come out of nucmer for RepeatM
+For use in RepeatM. See: github.com/wwood/RepeatM
 
-Alternative method for clustering match objects that come out of nucmer for RepeatM
+
 Based on Disjoint Set / Union-Find algorithm.
 See:
     https://www.geeksforgeeks.org/union-find/
@@ -16,6 +17,9 @@ TODO:
 @email: daniel.rawlinson@uqconnect.edu.au
 """
 
+
+
+'''--------------------define functions---------------------------------'''
 def find_parent(node, node_parent_array):
     #print('finding parent of', node)
     try:

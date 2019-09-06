@@ -131,7 +131,7 @@ class Contig_Cluster(object):
             f = open("/".join([assembly_dir, assembly]))
             for i in f:
                 if i.find(node)!=-1:
-                    seq_out.write(assembly+"__"+i)
+                    seq_out.write('>'+assembly+"__"+node.strip('>'))
                     wholeseq =False #flag to tell me if I've taken the whole sequence yet
                     while wholeseq ==False:
                         line = next(f)
@@ -239,21 +239,18 @@ len(match) |                                      |
         
         return labels
     
+    def has_larger(self, graph):
+        return
     
     def find_larger(self, graph):
         #TODO - not functioning yet
         '''find clusters that might envelop the sequences in the given cluster'''
-        frag_elements = self.find_fragments(frag_matches)
+        larger_components = graph.identify_larger(self)
         
-        outside_nodes = []
-        for f in frag_elements:
-            for s in f.seqs:
-                if s not in self.nodes:
-                    outside_nodes.append(s)
-                    break
-            #related_clusters = [c for c in cluster_objs if ]
+        return larger_components
         
     def find_fragments(self, frag_matches):
+        #TODO - is this in use?
         '''find fragments that constitute the same sequence in a truncated assembly'''
         frag_elements = []
         for m in frag_matches:
@@ -267,7 +264,7 @@ len(match) |                                      |
 
 def cluster_agglomerate(cluster_objs, fragment_matches):
     '''connect clusters with other similar ones. connect with fragments'''
-    
+    #TODO - pipe for cluster_graph goes here
     return
 
 def summary_file(cluster_objs, outfile):

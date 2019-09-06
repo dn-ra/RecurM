@@ -131,7 +131,7 @@ class Contig_Cluster(object):
             f = open("/".join([assembly_dir, assembly]))
             for i in f:
                 if i.find(node)!=-1:
-                    seq_out.write('>'+assembly+"__"+node.replace('>',''))
+                    seq_out.write('>'+assembly+"__"+node.replace('>','')+'\n')
                     wholeseq =False #flag to tell me if I've taken the whole sequence yet
                     while wholeseq ==False:
                         line = next(f)

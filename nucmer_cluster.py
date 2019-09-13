@@ -112,6 +112,7 @@ class Contig_Cluster(object):
         #can get assembly_dir from delta output?
         
         outdir = 'CLUSTER_size_{}_avlen_{}_avcov_{}'.format(self.size, self.av_length, self.av_cov)
+        
         if not os.path.isdir(outdir):
             os.mkdir(outdir)
         
@@ -239,19 +240,22 @@ len(match) |                                      |
         
         return labels
     
-    def has_larger(self, graph):
-        return
+    def has_larger(self, graph_object):
+        outs = graph_object.edges[self]['out']
+        if outs:
+            return True
+        else:
+            return False
+
     
     def find_larger(self, graph):
         #TODO - not functioning yet
         '''find clusters that might envelop the sequences in the given cluster'''
-        larger_components = graph.identify_larger(self)
+        return graph.BFS(self)
         
-        return larger_components
-        
-    def find_fragments(self, frag_matches):
+    def find_fragments(self, frag_matches): #frag_matches = list of match objects that pass fragment test (ie. align1 <0.9, align2>0.9, ani > 0.9)
         #TODO - is this in use?
-        '''find fragments that constitute the same sequence in a truncated assembly'''
+        '''find fragments that constitute the same sequence but in a truncated assembly'''
         frag_elements = []
         for m in frag_matches:
             if m.seqs[0] in self.nodes or m.seqs[1] in self.nodes:

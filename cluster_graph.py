@@ -59,8 +59,9 @@ class Cluster_Graph(object):
 
     def add_edge(self, m): #where m is a frag_match object
         '''process match object and add into graph'''
-        long_link = m.seqs[m.lengths.index(max(m.lengths))]
-        short_link = m.seqs[m.lengths.index(min(m.lengths))]
+        idx_long = m.lengths.index(max(m.lengths))
+        long_link = m.seqs[idx_long]
+        short_link = m.seqs[1- idx_long]
         if long_link in self.c_n_d: # if that node belongs to a cluster get that cluster as the end being pointed to
             long_point = self.c_n_d[long_link] # this will be a cluster object
         

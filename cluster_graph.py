@@ -16,7 +16,6 @@ Uses this to determine fidelity of repeated sequences.
 
 '''imports'''
 import delta_parse
-import nucmer_cluster
 
 
 '''constants'''

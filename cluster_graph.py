@@ -46,7 +46,7 @@ class Cluster_Graph(object):
         
         #main initialisation of clusters as nodes.
         for c in cluster_objs:
-            self.pointers[c] = [] #initate pointers for clusters
+            self.pointers[c] = {'in': [], 'out': []} #initate pointers for clusters
             self.edges[c] = {'in': 0, 'out': 0, 'self': 0}
             for node in c.nodes:
                 self.c_n_d[node] = c #set up node-cluster dict. instantiation of vertex_objects happens 
@@ -54,7 +54,7 @@ class Cluster_Graph(object):
     def add_vertex(self, node_name): #should only be adding single sequence vertices after graph has been initialised.
         if not isinstance(node_name, str):
             raise Exception('This is not a string. Clusters must be instantiated as vertices at the point of Graph creation')
-        self.pointers[node_name] = []
+        self.pointers[node_name] = {'in': [], 'out': []}
         self.edges[node_name] = {'in':0,'out':0, 'self':None} #don't want self-matches. That's only for cluster objects
 
     def add_edge(self, m): #where m is a frag_match object
@@ -77,23 +77,35 @@ class Cluster_Graph(object):
                 self.add_vertex(short_link)
             short_point = short_link
             
-        self.pointers[short_point].append(long_point)
+
         
         if short_point == long_point:
             self.edges[short_point]['self'] +=1
         else:
             self.edges[short_point]['out'] +=1
             self.edges[long_point]['in'] +=1
-
+            self.pointers[short_point]['out'].append(long_point)
+            self.pointers[long_point]['in'].append(short_point)
+            
         return
     
         
     def quantify_subraphs(self):
         '''split graph into smaller connected ones'''
         #TODO - don't know how to achieve this. Do I need to add birectionality into the graph?
-        subgraph_sets = []
+        visited = set()
+        cnt = 0
         
-        return
+        for c in set(self.c_n_d.values()):
+            if c not in visited:
+                sub_graph = set(self.BFS(c, find='all'))
+                if visited.intersection(sub_graph):
+                    raise RuntimeError('Ovlerlap in subraphs')
+    
+                visited.update(sub_graph)
+                cnt+=1
+        
+        return cnt
     
        
 #these come from fragments, not from cluster_objs. instantiate as they are read
@@ -107,17 +119,27 @@ class Cluster_Graph(object):
 
     '''BFS'''
 
-    def BFS(self, cluster_obj): #find all vertices that a partciular vertex points to (ie. is a fragment of)
+    def BFS(self, cluster_obj, find = 'larger'): #find all vertices that a partciular vertex points to (ie. is a fragment of)
+        if find == 'larger':
+            point_ref = '[\'out\']' #what to extract from the pointers list
+        elif find == 'smaller':
+            point_ref = '[\'in\']'
+        elif find == 'all':
+            point_ref = '.values()'
+        
         queue = [cluster_obj]
         visited = set()
         connected_graph = []
         
-        
         while queue: #driver
             v = queue.pop(0)
             if v not in visited:
-                points_to = [p for p in self.pointers[v] if p not in visited]
-                queue += points_to
+                val = eval('self.pointers[v]{}'.format(point_ref)) #extract the pointers defined by the 'find' argument
+                if find == 'all': #this will be a dict_values output format. Need to process differently
+                    points = [j for i in val for j in i if j not in visited]
+                else:
+                    points = [p for p in val if p not in visited]
+                queue += points
                 if v != cluster_obj: #don't add query cluster into output
                     connected_graph.append(v)
                 

@@ -51,11 +51,12 @@ class Cluster_Graph(object):
             for node in c.nodes:
                 self.c_n_d[node] = c #set up node-cluster dict. instantiation of vertex_objects happens 
                 
-    def add_vertex(self, node_name): #should only be adding single sequence vertices after graph has been initialised.
-        if not isinstance(node_name, str):
-            raise Exception('This is not a string. Clusters must be instantiated as vertices at the point of Graph creation')
-        self.pointers[node_name] = {'in': [], 'out': []}
-        self.edges[node_name] = {'in':0,'out':0, 'self':None} #don't want self-matches. That's only for cluster objects
+    '''no longer add new vertices for single sequnces'''
+#    def add_vertex(self, node_name): #should only be adding single sequence vertices after graph has been initialised.
+#        if not isinstance(node_name, str):
+#            raise Exception('This is not a string. Clusters must be instantiated as vertices at the point of Graph creation')
+#        self.pointers[node_name] = {'in': [], 'out': []}
+#        self.edges[node_name] = {'in':0,'out':0, 'self':None} #don't want self-matches. That's only for cluster objects
 
     def add_edge(self, m): #where m is a frag_match object
         '''process match object and add into graph'''
@@ -66,16 +67,18 @@ class Cluster_Graph(object):
             long_point = self.c_n_d[long_link] # this will be a cluster object
         
         else: #if not match to a cluster
-            if long_link not in self.pointers: #if it hasn't already been added to the graph 
-                self.add_vertex(long_link)
-            long_point = long_link #set pointer as the single sequence
+            return #exit if doesn't bind to cluster
+#            if long_link not in self.pointers: #if it hasn't already been added to the graph 
+#                self.add_vertex(long_link)
+#            long_point = long_link #set pointer as the single sequence
             
         if short_link in self.c_n_d:
             short_point = self.c_n_d[short_link]
         else:
-            if short_link not in self.pointers:
-                self.add_vertex(short_link)
-            short_point = short_link
+            return
+#            if short_link not in self.pointers:
+#                self.add_vertex(short_link)
+#            short_point = short_link
             
 
         

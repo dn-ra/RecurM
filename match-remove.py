@@ -19,12 +19,14 @@ from Bio.Alphabet import IUPAC
 
 '''repeatm modules'''
 import delta_parse
+import nucmer_cluster
 
 
 '''other'''
 #import intervals
 import os
 import sys
+import intervals
 
 '''set locations and files'''
 bin_dir = '/srv/home/s4204666/abisko/aterrible_bins/12_assembly73_individuals_flat20160115/bins_unique_contig_names.shorter' #location of bin fasta files
@@ -36,8 +38,12 @@ repseqs_loc = '/srv/home/s4204666/abisko/dan/repeatm_tests/all_assemblies/cluste
 '''functions in use here'''
 def remove_contig(match_object, target = 2):
     #target is 2 if bin_file sequences is the second seuqence of the match object (expected)
-    #else, set as 1
+    #else, set as 1    
+    
     remove = False
+#    if match_object.get_ani() < 0.9:
+#        return remove #early exit if ani fails threshold
+    
     for i in len(match_object):
         span = intervals.closed(getattr(m, 'hitstarts_{}'.format(target))[i] -1, getattr(m, 'hitstops_{}'.format(target))[i] -1) #minus one for 0-based indexing
         if i ==0:
@@ -48,20 +54,19 @@ def remove_contig(match_object, target = 2):
     if total_length > (match_object.lengths[target-1] * 0.90): #if whole match area is >90% of the sequence
         remove = True
     
-   
-    #this stuff below is from when I was trying to slice out segments     
-        #spliced_seq =  Seq('', IUPAC.unambiguous_dna) #remove the whole sequence
-        
-#    else:
-#        spliced_seq = seqs[match_object.seqs[ target -1 ]]
-#        for ivl in c_span:
-#            #TODO - here to set a boundary for how small a match to remove
-#            if ivl.upper - ivl.lower >0:
-#                print(ivl)
-#                spliced_seq = spliced_seq.seq[ 0:ivl.lower ] + spliced_seq.seq[ ivl.upper:: ]
-    
     return remove
 
+'''not needed. already performed prior to this step'''
+#def include_cluster(cluter_obj, cluster_graph): #target 1 if the cluster object is the cluster sequence.
+#    '''check with cluster_graph. Only include this cluster if it has no larger cluster/sequence'''
+#    source_object = cluster_graph['c_n_d'][match_object.seqs[target-1]]
+#    if source_object.has_larger(cluster_graph): #if the cluster has a bigger assembly in the graph
+#        include = False        
+#    else:
+#        include = True
+#        
+#    return include
+    
 
 '''start process'''
 
@@ -75,14 +80,14 @@ for line in f:
 f.close()
 
 
-
+print('processing bin delta files')
 alldeltas = []
 for file in os.listdir():
     if file.endswith('.delta'):
         alldeltas.append(delta_parse.deltaread(file))
 
-bin_contigs_remove = {}
 
+'''link match objects to each bin'''
 bin_matches = {} #dictionary of each repeatedly assembled sequence with it's associated match from the bins
 #forge connection between contigs and their bins
 for d in alldeltas:
@@ -92,10 +97,13 @@ for d in alldeltas:
             m.seqs[1] = bin_ref+"__"+m.seqs[1]
             #extract sequences for manipulation
            # seqs [m.seqs[1]] = retrieve_bin_seq(bin_dir, m) #seq_object dict to be passed into remove_span function
+           
+           #get bin location for each match object
             try:
                 bin_matches[m.seqs[0]].append(m)
             except KeyError:
                 bin_matches[m.seqs[0]] = [m]
+
 
 bin_finds = {} #dictionary of # of bins where each node (the key) is found at threshold value
 for key, value in bin_matches.items():
@@ -120,14 +128,16 @@ for k,v in bin_finds.items():
         no_bins.append(k)
 
 '''construct dictionary of sequences to remove from bins'''
+bin_contigs_remove = {}
+
 for matches in bin_finds.values():
     for m in matches:
-        #if remove_contig(m): # a more robust measurement that accounts for overlapping regions. Probably not necessary at this point seeing that it has already passed the apply_threshold step. but this intervals method should really be replacing the apply_threshold method in future
-        bin_ref, seq_name = m.seqs[1].split("__")
-        try:
-            bin_contigs_remove[bin_ref] += seq_name
-        except KeyError:
-            bin_contigs_remove[bin_ref] = [ seq_name ]
+        if remove_contig(m): # a more robust measurement that accounts for overlapping regions. Probably not necessary at this point seeing that it has already passed the apply_threshold step. but this intervals method should really be replacing the apply_threshold method in future
+            bin_ref, seq_name = m.seqs[1].split("__")
+            try:
+                bin_contigs_remove[bin_ref] += seq_name
+            except KeyError:
+                bin_contigs_remove[bin_ref] = [ seq_name ]
        
 
 
@@ -152,22 +162,7 @@ for file in derep_bins:
 #has to be a more succint way to write all this??^^
             
 for num, seq in enumerate(SeqIO.parse(handle = repseqs_loc, format='fasta', alphabet = IUPAC.unambiguous_dna)):
-    seq.id = 'cluster_{}~{}'.format(num, seq.id)
+    seq.id = 'cluster_{}~{}'.format(num+1, seq.id)
     SeqIO.write(seq, f, format = 'fasta')
 
 f.close()
-
-
-
-
-
-
-
-'''unused functions'''
-        
-def copy_edited_bin():
-    '''export whole new bin file with edited contigs'''
-    return
-
-def find_larger(): #and find smaller? #is this better to have in the cluster object?
-    return

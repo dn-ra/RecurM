@@ -23,6 +23,7 @@ imports
 import os
 import intervals
 
+
 '''constants'''
 
 
@@ -147,8 +148,8 @@ class Nucmer_Match(object):
         return passthresh
     
     
-    def is_fragment(self, upperthreshold = 0.9, lowerthreshold = 0.9, stats = False): #option to precalculate stats
-        if stats == False:
+    def is_fragment(self, upperthreshold = 0.9, lowerthreshold = 0.9, stats = None): #option to precalculate stats
+        if stats == None:
             stats = self.gen_statistics()
             
         min_align = min(stats[1:3])

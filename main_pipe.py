@@ -28,7 +28,6 @@ assembly_dir = '/srv/home/s4204666/abisko/dan/repeatm_tests/all_assemblies/filte
 #set location of bam files
 bam_dir = ''
 
-cluster_method = 'union-find' #set to union-find or single-linkage
 
 #set empty vector of all nucmer_matches that pass threshold (=0.90 by default)
 collated_sig_matches = []

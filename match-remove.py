@@ -13,13 +13,11 @@ Important for dev:
 
 '''biopython modules'''
 from Bio import SeqIO
-from Bio.Seq import Seq
 from Bio.Alphabet import IUPAC
 
 
 '''repeatm modules'''
 import delta_parse
-import nucmer_cluster
 
 
 '''other'''
@@ -29,10 +27,16 @@ import sys
 import intervals
 
 '''set locations and files'''
+#directory of bin files
 bin_dir = '/srv/home/s4204666/abisko/aterrible_bins/12_assembly73_individuals_flat20160115/bins_unique_contig_names.shorter' #location of bin fasta files
+#names of derep bins
 derep_bins_file = '/srv/home/s4204666/abisko/aterrible_bins/12_assembly73_individuals_flat20160115/dereplicated_genomes.txt'
+#fasta file to save to
 exit_bin_file = 'for_coverm.fa'
-repseqs_loc = '/srv/home/s4204666/abisko/dan/repeatm_tests/all_assemblies/cluster_test_unionfind/size_50+_all_repseqs.fa' #disk location of all_repseqs.fa
+#disk location of all_repseqs.fa
+repseq_locs = {'Circular':'/srv/home/s4204666/abisko/dan/repeatm_tests/all_assemblies/cluster_test_unionfind/circular_superior_sequences/circular_plasmid_complete.fa', 'Perfect':'/srv/home/s4204666/abisko/dan/repeatm_tests/all_assemblies/cluster_test_unionfind/perfect_superior_sequences/perfect_plasmid_complete.fa'}
+#directories where binvscluster nucmer results are stored
+delta_dirs = ['/srv/home/s4204666/abisko/dan/repeatm_tests/all_assemblies/cluster_test_unionfind/perfect_superior_sequences/clusters_v_bins','/srv/home/s4204666/abisko/dan/repeatm_tests/all_assemblies/cluster_test_unionfind/circular_superior_sequences/clusters_v_bins']
 
 
 '''functions in use here'''
@@ -44,8 +48,9 @@ def remove_contig(match_object, target = 2):
 #    if match_object.get_ani() < 0.9:
 #        return remove #early exit if ani fails threshold
     
-    for i in len(match_object):
-        span = intervals.closed(getattr(m, 'hitstarts_{}'.format(target))[i] -1, getattr(m, 'hitstops_{}'.format(target))[i] -1) #minus one for 0-based indexing
+    for i in range(len(match_object)):
+        coords = [getattr(m, 'hitstarts_{}'.format(target))[i] -1, getattr(m, 'hitstops_{}'.format(target))[i] -1] #minus one for 0-based indexing
+        span = intervals.closed(min(coords),max(coords))
         if i ==0:
             c_span = span
         else:
@@ -56,16 +61,6 @@ def remove_contig(match_object, target = 2):
     
     return remove
 
-'''not needed. already performed prior to this step'''
-#def include_cluster(cluter_obj, cluster_graph): #target 1 if the cluster object is the cluster sequence.
-#    '''check with cluster_graph. Only include this cluster if it has no larger cluster/sequence'''
-#    source_object = cluster_graph['c_n_d'][match_object.seqs[target-1]]
-#    if source_object.has_larger(cluster_graph): #if the cluster has a bigger assembly in the graph
-#        include = False        
-#    else:
-#        include = True
-#        
-#    return include
     
 
 '''start process'''
@@ -79,15 +74,21 @@ for line in f:
     derep_bins.append(line.strip()+'.fna')
 f.close()
 
+print('{} bins submitted for processing'.format(len(derep_bins)))
 
-print('processing bin delta files')
+print('processing bin delta files', flush=True)
 alldeltas = []
-for file in os.listdir():
-    if file.endswith('.delta'):
-        alldeltas.append(delta_parse.deltaread(file))
+for directory in delta_dirs:
+    for file in os.listdir(directory):
+        if file.endswith('.delta'):
+            alldeltas.append(delta_parse.deltaread(os.path.join(directory, file)))
 
 
 '''link match objects to each bin'''
+
+print('building cluster-bin linkages',flush=True)
+sys.stdout.flush()
+
 bin_matches = {} #dictionary of each repeatedly assembled sequence with it's associated match from the bins
 #forge connection between contigs and their bins
 for d in alldeltas:
@@ -95,8 +96,6 @@ for d in alldeltas:
         bin_ref = key.split("---")[1]
         for m in value:
             m.seqs[1] = bin_ref+"__"+m.seqs[1]
-            #extract sequences for manipulation
-           # seqs [m.seqs[1]] = retrieve_bin_seq(bin_dir, m) #seq_object dict to be passed into remove_span function
            
            #get bin location for each match object
             try:
@@ -127,6 +126,17 @@ for k,v in bin_finds.items():
     elif len(v) == 0:
         no_bins.append(k)
 
+print('Identified bin-cluster linkages')
+print()
+print('{} sequences map to bins'.format(len(single_bin_match)))
+print('{} sequences do not map to bins'.format(len(no_bins)))
+if multiple_bin_match:
+    print('Warning! The following sequences were found in more than 1 bin:')
+    for seq in multiple_bin_match:
+        print(seq)
+
+sys.stdout.flush()  
+
 '''construct dictionary of sequences to remove from bins'''
 bin_contigs_remove = {}
 
@@ -141,11 +151,12 @@ for matches in bin_finds.values():
        
 
 
-'''Go through all bin files. Copy and amend names. remove repeat elements.'''
+'''Go through all bin files. Copy and amend names to contain linkages. remove repeat elements. Save total fasta file as for_coverm.fa'''
+
 
 f = open(exit_bin_file, 'w')
 for file in derep_bins:
-    print('processing {} in dereplicated bins'.format(file))
+    print('processing {} in dereplicated bins'.format(file), flush=True)
     sys.stdout.flush()
     
     if file in bin_contigs_remove.keys():
@@ -160,9 +171,18 @@ for file in derep_bins:
             seq.id = file+"~"+seq.id
             SeqIO.write(seq, f, format='fasta')         
 #has to be a more succint way to write all this??^^
-            
-for num, seq in enumerate(SeqIO.parse(handle = repseqs_loc, format='fasta', alphabet = IUPAC.unambiguous_dna)):
-    seq.id = 'cluster_{}~{}'.format(num+1, seq.id)
-    SeqIO.write(seq, f, format = 'fasta')
 
+#write in all the cluster sequences that weren't thrown in with the bins
+
+seen_set = set() #there are two sets of clusters - perfect and circular - so there will be duplicates. Save ids in here to skip if they are seen again
+
+for typ, file in repseq_locs.items():
+    for num, seq in enumerate(SeqIO.parse(handle = file, format='fasta', alphabet = IUPAC.unambiguous_dna)):
+        if seq.id not in seen_set:
+            seen_set.add(seq.id)
+            seq.id = 'cluster_{}_{}~{}'.format(typ, num+1, seq.id)
+            SeqIO.write(seq, f, format = 'fasta')
+    
+ 
 f.close()
+print('Bin linking Complete! File for processing in CoverM stored at {}'.format(exit_bin_file))

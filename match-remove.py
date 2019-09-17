@@ -121,19 +121,20 @@ no_bins = []
 for k,v in bin_finds.items():
     if len(v) ==1:
         single_bin_match.append(k)
-    elif len(v) >2:
+    elif len(v) >1:
         multiple_bin_match.append(k)
     elif len(v) == 0:
         no_bins.append(k)
 
 print('Identified bin-cluster linkages')
 print()
-print('{} sequences map to bins'.format(len(single_bin_match)))
+print('{} sequences map to bins'.format(len(single_bin_match)+len(multiple_bin_match)))
 print('{} sequences do not map to bins'.format(len(no_bins)))
+
 if multiple_bin_match:
-    print('Warning! The following sequences were found in more than 1 bin:')
-    for seq in multiple_bin_match:
-        print(seq)
+    for key, values in multiple_bin_match.items():
+        if len(set([m.seqs[1] for m in values]))>1:
+            print('Warning! {} was found in more than one bin'.format(key))
 
 sys.stdout.flush()  
 
@@ -145,7 +146,7 @@ for matches in bin_finds.values():
         if remove_contig(m): # a more robust measurement that accounts for overlapping regions. Probably not necessary at this point seeing that it has already passed the apply_threshold step. but this intervals method should really be replacing the apply_threshold method in future
             bin_ref, seq_name = m.seqs[1].split("__")
             try:
-                bin_contigs_remove[bin_ref] += seq_name
+                bin_contigs_remove[bin_ref].append(seq_name)
             except KeyError:
                 bin_contigs_remove[bin_ref] = [ seq_name ]
        
@@ -155,21 +156,27 @@ for matches in bin_finds.values():
 
 
 f = open(exit_bin_file, 'w')
+cnt=0
 for file in derep_bins:
     print('processing {} in dereplicated bins'.format(file), flush=True)
     sys.stdout.flush()
     
     if file in bin_contigs_remove.keys():
+        print('Removing {} sequences from {}'.format(len(bin_contigs_remove[file]), file), flush = True)
         for seq in SeqIO.parse(handle = os.path.join(bin_dir, file), format = 'fasta', alphabet=IUPAC.unambiguous_dna):
                 if seq.id in bin_contigs_remove[file]:
+                    cnt+=1
                     continue #don't copy. It's in my repeated elements
+                    
                 else:
                     seq.id = file+"~"+seq.id
                     SeqIO.write(seq, f, format='fasta')
     else:
         for seq in SeqIO.parse(handle = os.path.join(bin_dir, file), format = 'fasta', alphabet=IUPAC.unambiguous_dna):
             seq.id = file+"~"+seq.id
-            SeqIO.write(seq, f, format='fasta')         
+            SeqIO.write(seq, f, format='fasta')    
+            
+print('{} sequences removed from bins'.format(cnt), flush=True)
 #has to be a more succint way to write all this??^^
 
 #write in all the cluster sequences that weren't thrown in with the bins

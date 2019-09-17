@@ -132,8 +132,8 @@ print('{} sequences map to bins'.format(len(single_bin_match)+len(multiple_bin_m
 print('{} sequences do not map to bins'.format(len(no_bins)))
 
 if multiple_bin_match:
-    for key, values in multiple_bin_match.items():
-        if len(set([m.seqs[1] for m in values]))>1:
+    for key in multiple_bin_match:
+        if len(set([m.seqs[1] for m in bin_finds[key]]))>1:
             print('Warning! {} was found in more than one bin'.format(key))
 
 sys.stdout.flush()  

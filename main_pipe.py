@@ -49,12 +49,15 @@ for file in os.listdir(delta_dir):
         print('thresholding {}'.format(file))
         firstpass_fragments = []
         for m in next(iter(delta.values())):
-            stats = m.gen_statistics()
-            if m.apply_threshold(threshold = 0.90, stats = stats) == True:
-                collated_sig_matches.append(m)
-                sigmatch_set.update(set(m.seqs))
-            elif m.is_fragment(upperthreshold = 0.90, lowerthreshold = 0.90, stats = stats):
-                firstpass_fragments.append(m)
+            if m.seqs[0] ==m.seqs[1]:
+                continue #it's a self match
+            else:
+                stats = m.gen_statistics()
+                if m.apply_threshold(threshold = 0.90, stats = stats) == True:
+                    collated_sig_matches.append(m)
+                    sigmatch_set.update(set(m.seqs))
+                elif m.is_fragment(upperthreshold = 0.90, lowerthreshold = 0.90, stats = stats):
+                    firstpass_fragments.append(m)
     
         #all match objects are read in. keep only those fragments that map to full matches
         for m in firstpass_fragments:

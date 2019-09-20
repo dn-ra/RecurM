@@ -36,7 +36,7 @@ exit_bin_file = 'for_coverm.fa'
 #disk location of all_repseqs.fa
 repseq_locs = {'Circular':'/srv/home/s4204666/abisko/dan/repeatm_tests/all_assemblies/cluster_test_unionfind/circular_superior_sequences/circular_superior_allrepseqs.fa', 'Perfect':'/srv/home/s4204666/abisko/dan/repeatm_tests/all_assemblies/cluster_test_unionfind/perfect_superior_sequences/perfect_superior_allrepseqs.fa'}
 #directories where binvscluster nucmer results are stored
-delta_dirs = ['/srv/home/s4204666/abisko/dan/repeatm_tests/all_assemblies/cluster_test_unionfind/perfect_superior_sequences/clusters_v_bins','/srv/home/s4204666/abisko/dan/repeatm_tests/all_assemblies/cluster_test_unionfind/circular_superior_sequences/clusters_v_bins']
+delta_dirs = ['//srv/home/s4204666/abisko/dan/repeatm_tests/all_assemblies/cluster_test_unionfind/perfect_superior_sequences/allperfect_clusters_v_bins','/srv/home/s4204666/abisko/dan/repeatm_tests/all_assemblies/cluster_test_unionfind/circular_superior_sequences/allcircular_clusters_v_bins']
 
 
 '''functions in use here'''

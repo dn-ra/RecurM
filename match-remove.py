@@ -25,6 +25,7 @@ import delta_parse
 import os
 import sys
 import intervals
+import csv
 
 '''set locations and files'''
 #directory of bin files
@@ -143,9 +144,10 @@ for k,v in bin_finds.items():
             bin_multi_seqs[m.seqs[1].split('__')[0]] = [m.seqs[0]]
 
 f = open('bins_with_multiple_seqs', 'w')
+w= csv.writer(delimiter="\t")
 for key, value in bin_multi_seqs.items():
     if len(value) >1:
-        f.write(key +'\t'+ value+'\n')
+        w.writerow([key, value])
 f.close()
 
 print('Identified bin-cluster linkages')

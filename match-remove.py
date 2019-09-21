@@ -34,9 +34,9 @@ derep_bins_file = '/srv/home/s4204666/abisko/aterrible_bins/12_assembly73_indivi
 #fasta file to save to
 exit_bin_file = 'for_coverm.fa'
 #disk location of all_repseqs.fa
-repseq_locs = {'Circular':'/srv/home/s4204666/abisko/dan/repeatm_tests/all_assemblies/cluster_test_unionfind/circular_superior_sequences/circular_superior_allrepseqs.fa', 'Perfect':'/srv/home/s4204666/abisko/dan/repeatm_tests/all_assemblies/cluster_test_unionfind/perfect_superior_sequences/perfect_superior_allrepseqs.fa'}
+repseq_locs = {'Circular':'/srv/home/s4204666/abisko/dan/repeatm_tests/all_assemblies/cluster_complete/circular_superior.fa', 'Perfect':'/srv/home/s4204666/abisko/dan/repeatm_tests/all_assemblies/cluster_complete/perfect_superior_nocircular.fa'}
 #directories where binvscluster nucmer results are stored
-delta_dirs = ['//srv/home/s4204666/abisko/dan/repeatm_tests/all_assemblies/cluster_test_unionfind/perfect_superior_sequences/allperfect_clusters_v_bins','/srv/home/s4204666/abisko/dan/repeatm_tests/all_assemblies/cluster_test_unionfind/circular_superior_sequences/allcircular_clusters_v_bins']
+delta_dirs = ['/srv/home/s4204666/abisko/dan/repeatm_tests/all_assemblies/cluster_complete/clustersvbins']
 
 
 '''functions in use here'''
@@ -114,9 +114,20 @@ for key, value in bin_matches.items():
         
 
 '''for reporting on stats of matches to bins'''
+
+f = open('bin_remove_summary.txt', 'w')
+for value in bin_finds.values():
+    for m in value:
+        f.write(m.seqs[0]+'\t'+m.seqs[1])
+
+f.close()
+
+
+
 single_bin_match = []
 multiple_bin_match = []
 no_bins = []
+bin_multi_seqs = {}
 
 for k,v in bin_finds.items():
     if len(v) ==1:
@@ -125,6 +136,17 @@ for k,v in bin_finds.items():
         multiple_bin_match.append(k)
     elif len(v) == 0:
         no_bins.append(k)
+    for m in v:
+        try:
+            bin_multi_seqs[m.seqs[1]].append(m.seqs[0])
+        except KeyError:
+            bin_multi_seqs[m.seqs[1]] = [m.seqs[0]]
+
+f = open('bins_with_multiple_seqs', 'w')
+for key, value in bin_multi_seqs.items():
+    if len(value) >1:
+        f.write(key, value)
+f.close()
 
 print('Identified bin-cluster linkages')
 print()

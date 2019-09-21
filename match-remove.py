@@ -118,7 +118,7 @@ for key, value in bin_matches.items():
 f = open('bin_remove_summary.txt', 'w')
 for value in bin_finds.values():
     for m in value:
-        f.write(m.seqs[0]+'\t'+m.seqs[1])
+        f.write(m.seqs[0]+'\t'+m.seqs[1]+'\n')
 
 f.close()
 
@@ -138,9 +138,9 @@ for k,v in bin_finds.items():
         no_bins.append(k)
     for m in v:
         try:
-            bin_multi_seqs[m.seqs[1]].append(m.seqs[0])
+            bin_multi_seqs[m.seqs[1].split('__')[0]].append(m.seqs[0])
         except KeyError:
-            bin_multi_seqs[m.seqs[1]] = [m.seqs[0]]
+            bin_multi_seqs[m.seqs[1].split('__')[0]] = [m.seqs[0]]
 
 f = open('bins_with_multiple_seqs', 'w')
 for key, value in bin_multi_seqs.items():

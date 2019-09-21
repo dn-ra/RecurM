@@ -145,7 +145,7 @@ for k,v in bin_finds.items():
 f = open('bins_with_multiple_seqs', 'w')
 for key, value in bin_multi_seqs.items():
     if len(value) >1:
-        f.write(key, value)
+        f.write(key +'\t'+ value+'\n')
 f.close()
 
 print('Identified bin-cluster linkages')

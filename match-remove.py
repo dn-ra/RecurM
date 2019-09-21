@@ -144,7 +144,7 @@ for k,v in bin_finds.items():
             bin_multi_seqs[m.seqs[1].split('__')[0]] = [m.seqs[0]]
 
 f = open('bins_with_multiple_seqs', 'w')
-w= csv.writer(delimiter="\t")
+w= csv.writer(f, delimiter="\t")
 for key, value in bin_multi_seqs.items():
     if len(value) >1:
         w.writerow([key, value])

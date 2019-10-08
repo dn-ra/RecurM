@@ -35,9 +35,11 @@ derep_bins_file = '/srv/home/s4204666/abisko/aterrible_bins/12_assembly73_indivi
 #fasta file to save to
 exit_bin_file = 'for_coverm.fa'
 #disk location of all_repseqs.fa
-repseq_locs = {'Circular':'/srv/home/s4204666/abisko/dan/repeatm_tests/all_assemblies/cluster_complete/circular_superior.fa', 'Perfect':'/srv/home/s4204666/abisko/dan/repeatm_tests/all_assemblies/cluster_complete/perfect_superior_nocircular.fa'}
+repseq_locs = {'Perfect':'/srv/home/s4204666/abisko/dan/repeatm_tests/all_assemblies/cluster_complete/FINAL_perfectlinear_vsbins/ALL_PEAK_PERFECT.fa', 
+               'Circular':'/srv/home/s4204666/abisko/dan/repeatm_tests/all_assemblies/set_scores/other_tools/circular_superior.fa'}
 #directories where binvscluster nucmer results are stored
-delta_dirs = ['/srv/home/s4204666/abisko/dan/repeatm_tests/all_assemblies/cluster_complete/clustersvbins']
+delta_dirs = ['/srv/home/s4204666/abisko/dan/repeatm_tests/all_assemblies/cluster_complete/FINAL_circular_vsbins', 
+              '/srv/home/s4204666/abisko/dan/repeatm_tests/all_assemblies/cluster_complete/FINAL_perfectlinear_vsbins'] 
 
 
 '''functions in use here'''
@@ -116,7 +118,7 @@ for key, value in bin_matches.items():
 
 '''for reporting on stats of matches to bins'''
 
-f = open('bin_remove_summary.txt', 'w')
+f = open('bin_found_summary.txt', 'w')
 for value in bin_finds.values():
     for m in value:
         f.write(m.seqs[0]+'\t'+m.seqs[1]+'\n')
@@ -153,7 +155,6 @@ f.close()
 print('Identified bin-cluster linkages')
 print()
 print('{} sequences map to bins'.format(len(single_bin_match)+len(multiple_bin_match)))
-print('{} sequences do not map to bins'.format(len(no_bins)))
 
 if multiple_bin_match:
     for key in multiple_bin_match:
@@ -211,7 +212,8 @@ for typ, file in repseq_locs.items():
     for num, seq in enumerate(SeqIO.parse(handle = file, format='fasta', alphabet = IUPAC.unambiguous_dna)):
         if seq.id not in seen_set:
             seen_set.add(seq.id)
-            seq.id = 'cluster_{}_{}~{}'.format(typ, num+1, seq.id)
+            seq.id = '{}~cluster_{}_{}'.format(seq.id,typ, num+1)
+            seq.name = None
             SeqIO.write(seq, f, format = 'fasta')
     
  

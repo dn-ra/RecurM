@@ -35,8 +35,8 @@ derep_bins_file = '/srv/home/s4204666/abisko/aterrible_bins/12_assembly73_indivi
 #fasta file to save to
 exit_bin_file = 'for_coverm.fa'
 #disk location of all_repseqs.fa
-repseq_locs = {'Perfect':'/srv/home/s4204666/abisko/dan/repeatm_tests/all_assemblies/cluster_complete/FINAL_perfectlinear_vsbins/ALL_PEAK_PERFECT.fa', 
-               'Circular':'/srv/home/s4204666/abisko/dan/repeatm_tests/all_assemblies/set_scores/other_tools/circular_superior.fa'}
+repseq_locs = {'Perfect':'/srv/home/s4204666/abisko/dan/repeatm_tests/all_assemblies/cluster_complete/FINAL_perfectlinear_vsbins/PROKKA_10082019/PROKKA_10082019.fna', 
+               'Circular':'/srv/home/s4204666/abisko/dan/repeatm_tests/all_assemblies/cluster_complete/FINAL_circular_vsbins/PROKKA_10082019/PROKKA_10082019.fna'}
 #directories where binvscluster nucmer results are stored
 delta_dirs = ['/srv/home/s4204666/abisko/dan/repeatm_tests/all_assemblies/cluster_complete/FINAL_circular_vsbins', 
               '/srv/home/s4204666/abisko/dan/repeatm_tests/all_assemblies/cluster_complete/FINAL_perfectlinear_vsbins'] 
@@ -163,20 +163,27 @@ if multiple_bin_match:
 
 sys.stdout.flush()  
 
-'''construct dictionary of sequences to remove from bins'''
+'''construct dictionary of sequences to leave out of coverage analysis'''
 bin_contigs_remove = {}
 
+''' ##previous method - remove sequences from bins
 for matches in bin_finds.values():
     for m in matches:
         if remove_contig(m): # a more robust measurement that accounts for overlapping regions. Probably not necessary at this point seeing that it has already passed the apply_threshold step. but this intervals method should really be replacing the apply_threshold method in future
-            bin_ref, seq_name = m.seqs[1].split("__")
+            bin_ref, seq_name = m.seqs[1].split("__")[0]
             try:
                 bin_contigs_remove[bin_ref].append(seq_name)
             except KeyError:
                 bin_contigs_remove[bin_ref] = [ seq_name ]
-       
+                '''
+''' new method - don't include bin match sequences as RAEs'''
+seen_set = set()
+for matches in bin_finds.values():
+    for m in matches:
+        if remove_contig(m):
+            seen_set.add(m.seqs[0])
 
-
+print('{} unique sequences map directly to bins'.format(len(set)))
 '''Go through all bin files. Copy and amend names to contain linkages. remove repeat elements. Save total fasta file as for_coverm.fa'''
 
 
@@ -185,28 +192,28 @@ cnt=0
 for file in derep_bins:
     print('processing {} in dereplicated bins'.format(file), flush=True)
     sys.stdout.flush()
-    
-    if file in bin_contigs_remove.keys():
-        print('Removing {} sequences from {}'.format(len(bin_contigs_remove[file]), file), flush = True)
-        for seq in SeqIO.parse(handle = os.path.join(bin_dir, file), format = 'fasta', alphabet=IUPAC.unambiguous_dna):
-                if seq.id in bin_contigs_remove[file]:
-                    cnt+=1
-                    continue #don't copy. It's in my repeated elements
-                    
-                else:
-                    seq.id = file+"~"+seq.id
-                    SeqIO.write(seq, f, format='fasta')
-    else:
-        for seq in SeqIO.parse(handle = os.path.join(bin_dir, file), format = 'fasta', alphabet=IUPAC.unambiguous_dna):
-            seq.id = file+"~"+seq.id
-            SeqIO.write(seq, f, format='fasta')    
+    '''this was for removing sequences from bins'''
+#    if file in bin_contigs_remove.keys():
+#        print('Removing {} sequences from {}'.format(len(bin_contigs_remove[file]), file), flush = True)
+#        for seq in SeqIO.parse(handle = os.path.join(bin_dir, file), format = 'fasta', alphabet=IUPAC.unambiguous_dna):
+#                if seq.id in bin_contigs_remove[file]:
+#                    cnt+=1
+#                    continue #don't copy. It's in my repeated elements
+##                 
+##               else:
+#                seq.id = file+"~"+seq.id
+#                SeqIO.write(seq, f, format='fasta')
+#    else:
+    for seq in SeqIO.parse(handle = os.path.join(bin_dir, file), format = 'fasta', alphabet=IUPAC.unambiguous_dna):
+        seq.id = file+"~"+seq.id
+        SeqIO.write(seq, f, format='fasta')    
             
-print('{} sequences removed from bins'.format(cnt), flush=True)
+#print('{} sequences removed from bins'.format(cnt), flush=True)
 #has to be a more succint way to write all this??^^
 
 #write in all the cluster sequences that weren't thrown in with the bins
 
-seen_set = set() #there are two sets of clusters - perfect and circular - so there will be duplicates. Save ids in here to skip if they are seen again
+#seen_set = set() #there are two sets of clusters - perfect and circular - so there will be duplicates. Save ids in here to skip if they are seen again
 
 for typ, file in repseq_locs.items():
     for num, seq in enumerate(SeqIO.parse(handle = file, format='fasta', alphabet = IUPAC.unambiguous_dna)):

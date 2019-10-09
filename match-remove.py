@@ -183,7 +183,7 @@ for matches in bin_finds.values():
         if remove_contig(m):
             seen_set.add(m.seqs[0])
 
-print('{} unique sequences map directly to bins'.format(len(set)))
+print('{} unique sequences map directly to bins'.format(len(seen_set)))
 '''Go through all bin files. Copy and amend names to contain linkages. remove repeat elements. Save total fasta file as for_coverm.fa'''
 
 

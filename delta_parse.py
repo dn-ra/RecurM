@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 A library for parsing and handling of information form nucmer's delta outfile.
-For use in RepeatM. See: github.com/wwood/RepeatM
+For use in RecurM. See: github.com/wwood/RepeatM
 
 Created on Thu May 30 13:42:15 2019
 
@@ -47,6 +47,8 @@ class Nucmer_Match(object):
     def __init__(self, match, matchdeets):
         
         #TODO - need float here or integer? integer only works for python 3
+		
+	
         self.seqs =        [match[0],match[1]]
         self.lengths =     list(map(int, [match[2], match[3]]))
         self.hitstarts_1 = list(map(int, [entry[0] for entry in matchdeets]))
@@ -60,12 +62,14 @@ class Nucmer_Match(object):
         return len(self.simerrors)
         
     def display(self):
+		'''print out coordinates of match object'''
         print('> '+(' '.join(self.seqs))+'\n')
         print('\t\tSeq1 region\tSeq2 region\tSimilarityErrors')
         for i in range(len(self)):
             print('Match {}\t\t{}:{}\t\t{}:{}\t\t{}'.format(i+1, self.hitstarts_1[i], self.hitstops_1[i], self.hitstarts_2[i], self.hitstops_2[i], self.simerrors[i]))
 
     def get_ani(self):
+		'''calculate ANI of the match'''
         identity_list = []
         for i in range(len(self)):
             alignlen = float(self.hitstops_1[i]) - self.hitstarts_1[i]
@@ -78,6 +82,7 @@ class Nucmer_Match(object):
     
     #TODO - fix abs to put in correct place
     def get_align1(self):
+		'''determine %age length of contig 1 in match'''
         #Earlier method
         #matchlength_1 = sum([float(self.hitstops_1[i]) - self.hitstarts_1[i] for i in range(len(self))])
         #alignment_ratio_1 = abs(matchlength_1/self.lengths[0])
@@ -95,7 +100,7 @@ class Nucmer_Match(object):
         return alignment_ratio_1
     
     def get_align2(self):
-    
+		'''determine %age length of contig 2 in match'''
         #Earlier method
         #matchlength_2 = sum([float(self.hitstops_2[i]) - self.hitstarts_2[i] for i in range(len(self))])
         #alignment_ratio_2 = abs(matchlength_2/self.lengths[1])
@@ -115,6 +120,7 @@ class Nucmer_Match(object):
         return alignment_ratio_2
     
     def get_lengthratio(self):
+		'''determine ratio of lengths between contigs'''
         length_ratio = float((min(self.lengths)) / max(self.lengths))
         
         return length_ratio
@@ -137,7 +143,9 @@ class Nucmer_Match(object):
         return length_ratio, alignment_ratio_1, alignment_ratio_2, ANI
         pass
     
-    def apply_threshold(self, threshold = 0.97, stats = False): #option to precalculate stats 
+    def apply_threshold(self, threshold = 0.97, stats = False):  
+		'''return the match if it passes threshold for all statistics
+		option to pass in precalculated statistics with stats = True'''
         passthresh = False
         if stats == False:
             stats = self.gen_statistics()
@@ -148,7 +156,8 @@ class Nucmer_Match(object):
         return passthresh
     
     
-    def is_fragment(self, upperthreshold = 0.9, lowerthreshold = 0.9, stats = None): #option to precalculate stats
+    def is_fragment(self, upperthreshold = 0.9, lowerthreshold = 0.9, stats = None):
+		'''return match if the shorter contig is a fragment of the longer. For use in cluster_graph module'''
         if stats == None:
             stats = self.gen_statistics()
             
@@ -162,6 +171,7 @@ class Nucmer_Match(object):
             return False
     
     def label(self):
+		'''label with the arrangement of the match'''
         #TODO - tighten definitions
         
         '''

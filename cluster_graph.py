@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
 """
-A module for use in RepeatM. see github.com/wwood/repeatm
+A module for use in RecurM. see github.com/wwood/repeatm
 
 Uses partial match Nucmer_Match object to form connections between clusters and exogenous sequences.
 Uses this to determine fidelity of repeated sequences.
@@ -20,21 +19,6 @@ import delta_parse
 
 '''constants'''
 
-
-
-'''constituent classes'''
-#TODO - keep pointers within classes here?
-#class cluster_vertex(object):
-#    
-#    def __init__(self, cluster_obj):
-#        self.in_d = 0
-#        self.out_d = 0
-#        self.c = cluster_obj #python default behaviour is to copy memory pointer, not deep copy
-
-#class single_vertex(object):
-#    
-#    def __init__(self, node_name):
-#        self.name = node_name
 
 '''------------------------begin class definition---------------------------'''
 class Cluster_Graph(object):

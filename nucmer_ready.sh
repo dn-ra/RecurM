@@ -2,10 +2,10 @@
 #edits contig names to include the assembly that they are sourced from
 #for use in nucmer for repeatm
 
-#remember that the assembly name is delimited from the node by __ (double underscore) this will need to go into repeatM
+#remember that the assembly name is delimited from the node by __ (double underscore) this is how RecurM associates contigs with an assembly
 
-#input: list of assemblies to edit contig names for
-#output: separate assembly files, names appended, with contig names containing node-assembly links
+#input: list of assemblies 
+#output: separate fasta file for each assembly (filtered to your desired length), names appended, with contig names containing node-assembly links (eg. >ASSEMBLY__CONTIG))
 
 module load parallel
 

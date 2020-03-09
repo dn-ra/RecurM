@@ -4,8 +4,6 @@ Created on Thu Aug 22 15:05:15 2019
 
 A script to remove repeatedly assembled sequences from bins. For use in determining coverage patterns between these repeat fragments and associated bins
 
-Important for dev:
-    the central feature of 
 
 @author: dan_r
 @email: daniel.rawlinson@uqconnect.edu.au

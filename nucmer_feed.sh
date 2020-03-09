@@ -1,10 +1,10 @@
 #!/bin/bash
 
-#nucmer alignment of all assemblies in input
+#This script performs nucmer alignment of all assemblies in input
 #input assemblies must be node-assembly matched (created by "nucmer_ready_assemblies.sh")
 
 #input: list of n assemblies to be processed
-#ouput: n-1 .delta files to be processed by repeatM
+#ouput: n-1 .delta files to be processed by RecurM
 
 echo Script initiated at $(date)
 
@@ -15,7 +15,7 @@ read -a ASSEMBLIES <<< ${@}
 echo $# assemblies submited for alignment
 
 mkdir nucmer_feed_out
-touch assemblies_iter_built.fa
+touch assemblies_iter_built.fa #this is the query sequences file. Increases by adding the previous reference file for each iteration.
 
 QUERY_SIZE=0
 

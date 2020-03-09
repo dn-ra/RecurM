@@ -30,6 +30,7 @@ spadespattern = re.compile(r'.*NODE_[0-9]*_', re.UNICODE)
 
 '''--------------------Begin class definition------------------------------'''
 class Contig_Cluster(object):
+	'''coverage and length are determined by the name of the contig produced from SPAdes. This will need to be changed if using contigs assembled with other assemblers'''
     def __init__(self, node_list, matches):
         if isinstance(node_list, str):
             raise RuntimeError('input to Contig_Cluster class must be list. String has been entered.')
@@ -90,11 +91,6 @@ class Contig_Cluster(object):
         return low
             
             
-            
-    #TODO - for running plasflow or cbar?
-    def plas_label(self):
-        return None
-    
     def split_names(self):
         '''splits the names of the nodes to redraw node-assembly links in dictionary format'''
         node_assembly_dict = {}
@@ -106,7 +102,8 @@ class Contig_Cluster(object):
     
 
     def retrieve_seqs(self, assembly_dir, repseq = False):
-        #all I need are nodes and location of source fasta files?
+		'''pull out the actual DNA sequences within the clusters from the original assemblies'''
+        #all I need are nodes and location of source fasta files
         #pop out assembly number from start of contig? use as input the source fastafiles?
         #Beware leaked processes
         #can get assembly_dir from delta output?
@@ -146,18 +143,12 @@ class Contig_Cluster(object):
         
         return None
     
-#     previously proposed method
-#       awk (retrieve sequence) $contigID $assembly_file
-#        nodefind_awk = '''-v name=$node 'BEGIN{RS=">";FS="\n"}NR>1{if ($1~/name/) print ">"$0}\''''
-#        CMD = 'while read -r node <&3 && read -r assembly <&4; do awk {} $assembly; done 3< <(printf "{}") 4< <(printf "{}")'.format(nodefind_awk, nodestring, assemblystring)
-#        subprocess.call(['bash', '-c', CMD])
-     
     
     
-#what if I look for orientation of reads mapped from other assemblies? Shouldn't that be consistent too?
-#have to call from within retreieve_seqs for tempfiles to be accessible
+
     def gen_minibam(node_assembly_dict, bam_location, outdir = 'minibam_out'): #pass self into this?
-        ''' make this automated so that python can interpret the output itself?
+		'''Currently defunct. Plan is to use this to output a bam file for each contig in the cluster. This can be used to assess whether read mapping supports a circular or complete linear plasmid arrangement'''
+        make this automated so that python can interpret the output itself?
         Will need to use Melody's script, plus something else I make to check for linearity'''
         sam_cmd = 'samtools view {1} {2} > %s/{1}_mini.bam' % (outdir) #edit this for correct command
         
@@ -210,14 +201,7 @@ len(match) |                                      |
         
      
          '''
-        '''  
-        #alignments_per_match
-        #if closer to one, more likely to be global match
-        num_alignments = 0
-        for m in self.matches:
-            num_alignments += len(m)
-        alignments_per_match = num_alignments/len(self.matches)
-        '''
+
         
         #selects a representative contig (the one with most matches) to test match alignment orientations
         labels = []
@@ -241,6 +225,7 @@ len(match) |                                      |
         return labels
     
     def has_larger(self, graph_object):
+		'''check if the cluster you are looking at has a cluster of longer contigs attached to it in the cluster_graph'''
         outs = graph_object.edges[self]['out']
         if outs:
             return True
@@ -248,10 +233,10 @@ len(match) |                                      |
             return False
 
     
-    def find_larger(self, graph):
+    def find_larger(self, graph_object):
         #TODO - not functioning yet
-        '''find clusters that might envelop the sequences in the given cluster'''
-        return graph.BFS(self)
+        '''find and retrieve clusters that might envelop the sequences in the given cluster'''
+        return graph_object.BFS(self)
         
     def find_fragments(self, frag_matches): #frag_matches = list of match objects that pass fragment test (ie. align1 <0.9, align2>0.9, ani > 0.9)
         #TODO - is this in use?
@@ -272,6 +257,7 @@ def cluster_agglomerate(cluster_objs, fragment_matches):
     return
 
 def summary_file(cluster_objs, outfile):
+	'''summarise resultant clusters in a text file'''
     with open(outfile+".csv", mode="w") as f:
         writer = csv.writer(f, delimiter=",", quoting = csv.QUOTE_NONE)
         writer.writerow(['Size', 'Length', 'Coverage'])
@@ -282,9 +268,7 @@ def summary_file(cluster_objs, outfile):
 def sort_clusters(cluster_list): #or maybe a dictionary instead?
     '''sort clusters by: 
     1. N in cluster, 2. length of N, 3. coverage of N
-    Don't get it just from the names. That's SPAdes format but some people won't use spades
-    Get it from the data directly. But megahit doesn't include any of this informaiton in the contig name, 
-    and coverage would need reads mapped'''
+    Length and coverage determined by contig names. Will need to be changed if using non-SPAdes contigs'''
     sortbysize = lambda c: (c.size is not None, c.size)
     sortbylength = lambda c: (c.av_length is not None, c.av_length)
     sortbycov = lambda c: (c.av_cov is not None, c.av_cov)
@@ -293,7 +277,8 @@ def sort_clusters(cluster_list): #or maybe a dictionary instead?
     #main sort function
     cluster_list.sort(reverse=True, key= lambda c: (sortbysize(c), sortbylength(c), sortbycov(c)))
 
-def build_sig_match_dict(sig_matches): #to build dictionary of nodes linked to their match objects
+def build_sig_match_dict(sig_matches): 
+	'''to build dictionary of nodes linked to their match objects. used in cluster_nucmer_matches '''
     sig_match_dict = {}
     for m in sig_matches:
         
@@ -310,11 +295,9 @@ def build_sig_match_dict(sig_matches): #to build dictionary of nodes linked to t
     return sig_match_dict
     
 def cluster_nucmer_matches(sig_matches): #sig_matches is a list of Nucmer_Match objects
-
+	'''main clustering function. input list of nucmer match objects that pass the significance threshold (default = 0.90)'''
     cluster_objs = []
 
-    #TODO - maybe change this so that it only creates a sig_match dict for the most represented node in the cluster? Would save a lot of time in the sig_match_dict generation step.
-    #which may be why the script is taking so long (>1 day currently)    
     sig_match_dict = build_sig_match_dict(sig_matches)
     
     cluster_list = union_find_cluster.union_find_pipe(sig_matches) #main clustering step

@@ -7,6 +7,9 @@ Main pipeline for Nucmer_Matching from .delta files to cluster generation
 author: Daniel Rawlinson, ACE
 email: daniel.rawlinson@uqconnect.edu.au
 """
+
+#TODO - implement cluster graphing into pipe
+#		- make as actual name = main python script.
 '''imports'''
 
 import single_linkage_cluster
@@ -106,15 +109,16 @@ f.close()
 f = open('pickled_fragments', 'wb')
 pickle.dump(cluster_frags, f)
 f.close()
-#exti type is list of match objects that map to clusters
+#exti type is list of match objects connect clusters together.
 
-##run analysis on clusters
-#for c in clusters:
-#    c.retrieve_seqs(assembly_dir = assembly_dir) #locations set at beginning of script. Does not return anything
-#    
-#f = open('pickled_clusters', 'wb')
-#pickle.dump(clusters, f)
-#f.close()
+#run analysis on clusters
+for c in clusters:
+   c.retrieve_seqs(assembly_dir = assembly_dir) #locations set at beginning of script. Does not return anything
+
+#pickle the clusters
+f = open('pickled_clusters', 'wb')
+pickle.dump(clusters, f)
+f.close()
 
 
     

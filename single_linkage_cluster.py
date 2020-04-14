@@ -139,7 +139,7 @@ class Contig_Cluster(object):
                             else:
                                 seq_out.write(line)
                         except StopIteration: #in case of last line in file
-                            whole_seq=True
+                            wholeseq=True
         
         seq_out.close()
         

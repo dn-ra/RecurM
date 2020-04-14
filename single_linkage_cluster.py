@@ -132,12 +132,14 @@ class Contig_Cluster(object):
                     seq_out.write('>'+assembly+"__"+node.replace('>','')+'\n')
                     wholeseq =False #flag to tell me if I've taken the whole sequence yet
                     while wholeseq ==False:
-                        line = next(f)
-                        if line.startswith('>'):
-                            wholeseq = True
-                        else:
-                            seq_out.write(line)
-        
+                        try:
+                            line = next(f)
+                            if line.startswith('>'):
+                                wholeseq = True
+                            else:
+                                seq_out.write(line)
+                        except StopIteration: #in case of last line in file
+                            whole_seq=True
         
         seq_out.close()
         

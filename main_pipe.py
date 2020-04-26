@@ -47,7 +47,7 @@ for file in os.listdir(delta_dir):
         print('parsing {}'.format(file))
         delta = delta_parse.deltaread(delta_dir+'/'+file)
         #exit type is dictionary
-        
+
         #threshold all matches and collate
         print('thresholding {}'.format(file))
         firstpass_fragments = []
@@ -61,7 +61,7 @@ for file in os.listdir(delta_dir):
                     sigmatch_set.update(set(m.seqs))
                 elif m.is_fragment(upperthreshold = 0.90, lowerthreshold = 0.90, stats = stats):
                     firstpass_fragments.append(m)
-    
+
         #all match objects are read in. keep only those fragments that map to full matches
         for m in firstpass_fragments:
             if m.seqs[0] in sigmatch_set:
@@ -95,33 +95,68 @@ cluster_node_set = set(cluster_nodes)
 
 cluster_frags = []
 
+print('extracting fragments...')
 for m in fragments:
     if m.seqs[0] in cluster_node_set:
         cluster_frags.append(m)
     elif m.seqs[1] in cluster_node_set:
         cluster_frags.append(m)
 
-f = open('pickled_cluster_objs', 'wb')
+#pickle the clusters
+print('pickling clusters...')
+f = open('pickled_clusters', 'wb')
 pickle.dump(clusters, f)
 f.close()
 #exit type is list of Contig_Cluster objects
 
+print('pickling fragments...')
 f = open('pickled_fragments', 'wb')
 pickle.dump(cluster_frags, f)
 f.close()
-#exti type is list of match objects connect clusters together.
+#exit type is list of match objects connecting clusters together.
 
 #run analysis on clusters
+print('retrieving cluster sequences...')
 for c in clusters:
    c.retrieve_seqs(assembly_dir = assembly_dir) #locations set at beginning of script. Does not return anything
 
-#pickle the clusters
-f = open('pickled_clusters', 'wb')
-pickle.dump(clusters, f)
-f.close()
+cirular = []
+perfect = []
 
+#label clusters
 
-    
-##determine orientation of matches in the cluster
+print('labelling clusters...')
+for c in clusters:
+    labs = c.label_cluster()
+    n_matches = len(labs)
+    n_perfect=0
+    for l in labs:
+        if 'circular' in l: #if any labels are circular, mark as circular
+            circular.append(c)
+            break
+        elif 'perfect' in l: # if > half of labels are 'perfect', mark as perfect
+            n_perfect+=1
+            if n_perfect >= n_matches/2:
+                perfect.append(c)
+                break
 
+#summaries of circular and perfect clusters
+print('producing summaries...')
+with open('circular_summary.txt','w') as f:
+    for c in circular:
+        f.write('size:',c.size, 'length:',c.av_length,'coverage:', c.av_cov)
+        f.write('contigs:')
+        for n in c.nodes:
+            f.write('\t'+n)
+        f.write('----------'+'\n')
+
+with open('linear_summary.txt', 'w') as f:
+    for c in perfect:
+        f.write('size:',c.size, 'length:',c.av_length,'coverage:', c.av_cov)
+        f.write('contigs:')
+        for n in c.nodes:
+            f.write('\t'+n)
+        f.write('----------'+'\n')
+
+print('complete!')
 '''-------------------------------------end pipe---------------------------'''

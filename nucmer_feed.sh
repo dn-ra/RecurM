@@ -33,7 +33,7 @@ cat $CURR_QUE >> assemblies_iter_built.fa;
 
 echo processing "$QUERY_SIZE" sequences in query file against reference file "$CURR_REF";
 
-/usr/bin/time nucmer "$CURR_REF" assemblies_iter_built.fa --delta=nucmer_feed_out/"$(date +%d%m%y)"_nucmer_iter_"$ITER" -t 24;
+/usr/bin/time nucmer "$CURR_REF" assemblies_iter_built.fa --delta=nucmer_feed_out/"$(date +%d%m%y)"_nucmer_iter_"$ITER".delta -t 24;
 done
 
 rm assemblies_iter_built.fa
